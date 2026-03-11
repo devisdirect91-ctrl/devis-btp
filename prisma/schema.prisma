@@ -1,0 +1,372 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id                       String        @id @default(cuid())
+  name                     String?
+  email                    String        @unique
+  emailVerified            DateTime?
+  password                 String?
+  image                    String?
+  companyName              String?
+  companyLogo              String?
+  companyAddress           String?
+  companyPhone             String?
+  companySiret             String?
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
+  assuranceCouverture      String?
+  assuranceNom             String?
+  assuranceNumero          String?
+  assurancePeriode         String?
+  companyCapital           String?
+  companyCity              String?
+  companyCountry           String?       @default("France")
+  companyEmail             String?
+  companyFormeJuridique    String?
+  companyPostalCode        String?
+  companyRcs               String?
+  companySiteWeb           String?
+  companyTvaIntra          String?
+  conditionsPaiementDefaut String?
+  mentionsLegalesDefaut    String?
+  tauxTvaDefaut            Float         @default(20)
+  validiteDevisDefaut      Int           @default(30)
+  couleurPrimaire          String        @default("#1d4ed8")
+  assuranceRcProNom        String?
+  assuranceRcProNumero     String?
+  companyApe               String?
+  messageFinDevis          String?
+  penalitesRetard          String?
+  prefixeDevis             String        @default("DEVIS")
+  accounts                 Account[]
+  catalogItems             CatalogItem[]
+  clients                  Client[]
+  devis                    Devis[]
+  factures                 Facture[]
+  sessions                 Session[]
+
+  @@index([email])
+}
+
+model Client {
+  id         String     @id @default(cuid())
+  email      String?
+  siret      String?
+  userId     String
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  adresse    String?
+  civilite   String?
+  codePostal String?
+  complement String?
+  nom        String
+  notes      String?
+  pays       String?    @default("France")
+  portable   String?
+  prenom     String?
+  rcs        String?
+  societe    String?
+  telephone  String?
+  tvaIntra   String?
+  type       ClientType @default(PARTICULIER)
+  ville      String?
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  devis      Devis[]
+  factures   Facture[]
+
+  @@index([userId])
+  @@index([userId, type])
+  @@index([email])
+}
+
+model Devis {
+  id                    String         @id @default(cuid())
+  numero                String
+  titre                 String
+  status                DevisStatus    @default(BROUILLON)
+  validiteJours         Int            @default(30)
+  dateEmission          DateTime       @default(now())
+  dateValidite          DateTime?
+  totalHT               Float          @default(0)
+  totalTva              Float          @default(0)
+  totalTTC              Float          @default(0)
+  notes                 String?
+  conditionsPaiement    String?
+  mentionsLegales       String?
+  pdfUrl                String?
+  userId                String
+  clientId              String
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  accessToken           String?        @unique
+  dateEnvoi             DateTime?
+  dateSignature         DateTime?
+  numeroAnnee           Int
+  numeroSequence        Int
+  objetTravaux          String?
+  remiseGlobale         Float          @default(0)
+  signatureClientIp     String?
+  signatureClientNom    String?
+  signatureClientUrl    String?
+  totalRemise           Float          @default(0)
+  acompte               Float          @default(0)
+  acompteType           String         @default("PERCENT")
+  adresseChantier       String?
+  dateDebutPrevisionnel DateTime?
+  delaiExecution        String?
+  remiseGlobaleType     String         @default("PERCENT")
+  signatureClient       String?
+  signatureUserAgent    String?
+  signedPdfUrl          String?
+  signatureToken        String?        @unique
+  motifRefus            String?
+  factureGeneree        Boolean        @default(false)
+  client                Client         @relation(fields: [clientId], references: [id])
+  user                  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lignes                LigneDevis[]
+  signatureLogs         SignatureLog[]
+  facture               Facture?
+
+  @@unique([userId, numeroAnnee, numeroSequence])
+  @@index([userId])
+  @@index([clientId])
+  @@index([userId, status])
+  @@index([userId, numeroAnnee])
+}
+
+model LigneDevis {
+  id             String       @id @default(cuid())
+  ordre          Int
+  designation    String
+  description    String?
+  quantite       Float
+  prixUnitaireHT Float
+  tauxTva        Float        @default(20)
+  totalHT        Float
+  devisId        String
+  catalogItemId  String?
+  remise         Float        @default(0)
+  totalHtNet     Float
+  totalRemise    Float        @default(0)
+  totalTTC       Float
+  totalTva       Float
+  unite          Unite        @default(UNITE)
+  ligneType      String       @default("LINE")
+  catalogItem    CatalogItem? @relation(fields: [catalogItemId], references: [id])
+  devis          Devis        @relation(fields: [devisId], references: [id], onDelete: Cascade)
+
+  @@index([devisId])
+  @@index([devisId, ordre])
+  @@index([catalogItemId])
+}
+
+model CatalogItem {
+  id          String          @id @default(cuid())
+  category    CatalogCategory
+  designation String
+  description String?
+  unite       Unite           @default(UNITE)
+  prixHT      Float
+  tauxTva     Float           @default(20)
+  actif       Boolean         @default(true)
+  userId      String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  reference   String?
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lignesDevis LigneDevis[]
+
+  @@index([userId])
+  @@index([userId, category])
+  @@index([userId, actif])
+}
+
+model SignatureLog {
+  id        String          @id @default(cuid())
+  devisId   String
+  action    SignatureAction
+  ipAddress String?
+  userAgent String?
+  timestamp DateTime        @default(now())
+  metadata  Json?
+  devis     Devis           @relation(fields: [devisId], references: [id], onDelete: Cascade)
+
+  @@index([devisId])
+  @@index([devisId, action])
+}
+
+// ─── Facturation ──────────────────────────────────────────────────────────────
+
+model Facture {
+  id              String        @id @default(cuid())
+  userId          String
+  clientId        String
+  devisId         String?       @unique
+  numero          String        @unique // Format: FAC-2026-001
+  numeroAnnee     Int
+  numeroSequence  Int
+  dateEmission    DateTime      @default(now())
+  dateEcheance    DateTime
+  totalHT         Float         @default(0)
+  totalTva        Float         @default(0)
+  totalTTC        Float         @default(0)
+  status          FactureStatus @default(EN_ATTENTE)
+  montantPaye     Float         @default(0)
+  datePaiement    DateTime?
+  modePaiement    String?
+  notes           String?
+  mentionsLegales String?
+  conditionsPaiement String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client          Client        @relation(fields: [clientId], references: [id])
+  devis           Devis?        @relation(fields: [devisId], references: [id])
+  lignes          FactureLigne[]
+  acomptes        Acompte[]
+
+  @@unique([userId, numeroAnnee, numeroSequence])
+  @@index([userId])
+  @@index([clientId])
+  @@index([userId, status])
+  @@index([userId, numeroAnnee])
+  @@index([devisId])
+}
+
+model FactureLigne {
+  id             String  @id @default(cuid())
+  factureId      String
+  ordre          Int
+  ligneType      String  @default("LINE")
+  designation    String
+  description    String?
+  quantite       Float
+  unite          Unite   @default(UNITE)
+  prixUnitaireHT Float
+  remise         Float   @default(0)
+  tauxTva        Float   @default(20)
+  totalHT        Float
+  totalRemise    Float   @default(0)
+  totalHtNet     Float
+  totalTva       Float
+  totalTTC       Float
+  facture        Facture @relation(fields: [factureId], references: [id], onDelete: Cascade)
+
+  @@index([factureId])
+  @@index([factureId, ordre])
+}
+
+model Acompte {
+  id           String   @id @default(cuid())
+  factureId    String
+  montant      Float
+  datePaiement DateTime
+  modePaiement String
+  reference    String?
+  notes        String?
+  createdAt    DateTime @default(now())
+  facture      Facture  @relation(fields: [factureId], references: [id], onDelete: Cascade)
+
+  @@index([factureId])
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum ClientType {
+  PARTICULIER
+  PROFESSIONNEL
+}
+
+enum DevisStatus {
+  BROUILLON
+  ENVOYE
+  ACCEPTE
+  REFUSE
+  EXPIRE
+  VU
+}
+
+enum FactureStatus {
+  BROUILLON
+  EN_ATTENTE
+  PARTIELLEMENT_PAYEE
+  PAYEE
+  EN_RETARD
+  ANNULEE
+}
+
+enum SignatureAction {
+  ENVOYE
+  OUVERT
+  SIGNE
+  REFUSE
+}
+
+enum Unite {
+  UNITE
+  HEURE
+  JOUR
+  METRE
+  METRE_CARRE
+  METRE_CUBE
+  METRE_LINEAIRE
+  FORFAIT
+  ENSEMBLE
+  KILOGRAMME
+  TONNE
+  LITRE
+}
+
+enum CatalogCategory {
+  MACONNERIE
+  PLATRERIE
+  CARRELAGE
+  PEINTURE
+  PLOMBERIE
+  ELECTRICITE
+  MENUISERIE
+  CHARPENTE
+  COUVERTURE
+  ISOLATION
+  CHAUFFAGE
+  CLIMATISATION
+  TERRASSEMENT
+  VRD
+  DEMOLITION
+  NETTOYAGE
+  AUTRE
+  MAIN_OEUVRE
+  FOURNITURES
+}

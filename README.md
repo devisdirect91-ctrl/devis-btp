@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DevisBTP
 
-## Getting Started
+Application de gestion de devis et factures pour les artisans et entreprises du BTP.
 
-First, run the development server:
+## Fonctionnalités
+
+- **Devis** — Création, envoi, signature électronique, suivi des statuts
+- **Factures** — Génération depuis un devis ou de zéro, suivi des paiements
+- **Clients** — Gestion des fiches clients (particuliers et professionnels)
+- **Catalogue** — Bibliothèque de prestations réutilisables
+- **PDF** — Export PDF des devis et factures
+- **Emails** — Envoi automatique via Resend
+
+## Stack technique
+
+| Couche | Technologie |
+|---|---|
+| Framework | Next.js 14 (App Router) |
+| Langage | TypeScript |
+| Style | Tailwind CSS |
+| ORM | Prisma |
+| Base de données | PostgreSQL (Supabase) |
+| Auth | NextAuth.js (credentials) |
+| PDF | @react-pdf/renderer |
+| Email | Resend |
+| Signature | signature_pad v5 |
+
+## Installation locale
+
+### Prérequis
+
+- Node.js 18+
+- Un projet Supabase (base de données PostgreSQL)
+- Un compte Resend (optionnel, pour les emails)
+
+### 1. Cloner le repo
+
+```bash
+git clone https://github.com/<ton-username>/devis-btp.git
+cd devis-btp
+```
+
+### 2. Installer les dépendances
+
+```bash
+npm install
+```
+
+### 3. Configurer les variables d'environnement
+
+Crée un fichier `.env.local` à la racine :
+
+```env
+# Base de données Supabase
+DATABASE_URL="postgresql://postgres:[password]@db.[ref].supabase.co:5432/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres:[password]@db.[ref].supabase.co:5432/postgres"
+
+# NextAuth
+NEXTAUTH_SECRET="une-chaine-aleatoire-longue"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Supabase (stockage fichiers)
+NEXT_PUBLIC_SUPABASE_URL="https://[ref].supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="..."
+SUPABASE_SERVICE_ROLE_KEY="..."
+
+# Resend (optionnel)
+RESEND_API_KEY="re_..."
+```
+
+### 4. Initialiser la base de données
+
+```bash
+npx prisma migrate dev
+npx prisma generate
+```
+
+### 5. Lancer en développement
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+L'application est disponible sur http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Déploiement
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Le projet est prêt pour Vercel. Ajoute les variables d'environnement dans les paramètres du projet, puis connecte le repo GitHub.
