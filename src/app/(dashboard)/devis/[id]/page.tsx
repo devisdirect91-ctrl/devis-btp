@@ -313,18 +313,162 @@ export default async function DevisDetailPage({
       <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row gap-6 items-start print:p-0 print:gap-0">
         {/* Preview */}
         <div className="flex-1 min-w-0 w-full print:flex-1">
-          <DevisPreview
-            data={data}
-            signatureInfo={
-              (devis.signatureClientUrl || devis.signatureClient) && devis.signatureClientNom && devis.dateSignature
-                ? {
-                    nom: devis.signatureClientNom,
-                    date: devis.dateSignature,
-                    imageSrc: devis.signatureClientUrl ?? devis.signatureClient ?? "",
-                  }
-                : null
-            }
-          />
+
+          {/* ── Vue mobile : cartes empilées ───────────────────────────────── */}
+          <div className="md:hidden space-y-3">
+
+            {/* Client */}
+            <div className="bg-white rounded-2xl border border-slate-100 p-4">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Client</p>
+              <p className="font-semibold text-slate-900">{clientDisplayName(devis.client)}</p>
+              {devis.client.adresse && <p className="text-sm text-slate-500 mt-1">{devis.client.adresse}</p>}
+              {(devis.client.codePostal || devis.client.ville) && (
+                <p className="text-sm text-slate-500">
+                  {[devis.client.codePostal, devis.client.ville].filter(Boolean).join(" ")}
+                </p>
+              )}
+              {(devis.client.telephone || devis.client.portable) && (
+                <a
+                  href={`tel:${devis.client.telephone ?? devis.client.portable}`}
+                  className="text-sm text-blue-600 mt-1.5 block"
+                >
+                  {devis.client.telephone ?? devis.client.portable}
+                </a>
+              )}
+              {devis.client.email && (
+                <a href={`mailto:${devis.client.email}`} className="text-sm text-blue-600 block">
+                  {devis.client.email}
+                </a>
+              )}
+            </div>
+
+            {/* Informations */}
+            <div className="bg-white rounded-2xl border border-slate-100 p-4">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Informations</p>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-slate-400 text-xs">Émis le</p>
+                  <p className="font-medium text-slate-900">
+                    {fmtDate(devis.dateEmission, { day: "numeric", month: "short", year: "numeric" })}
+                  </p>
+                </div>
+                {devis.dateValidite && (
+                  <div>
+                    <p className="text-slate-400 text-xs">Validité</p>
+                    <p className={`font-medium ${isExpired ? "text-orange-600" : "text-slate-900"}`}>
+                      {fmtDate(devis.dateValidite, { day: "numeric", month: "short", year: "numeric" })}
+                    </p>
+                  </div>
+                )}
+                {devis.adresseChantier && (
+                  <div className="col-span-2">
+                    <p className="text-slate-400 text-xs">Adresse chantier</p>
+                    <p className="font-medium text-slate-900">{devis.adresseChantier}</p>
+                  </div>
+                )}
+                {devis.conditionsPaiement && (
+                  <div className="col-span-2">
+                    <p className="text-slate-400 text-xs">Conditions de paiement</p>
+                    <p className="text-slate-700">{devis.conditionsPaiement}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Prestations */}
+            <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+              <div className="px-4 py-3 border-b border-slate-50">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Prestations</p>
+              </div>
+              <div className="divide-y divide-slate-50">
+                {devis.lignes.map((l, i) =>
+                  l.ligneType === "SECTION" ? (
+                    <div key={i} className="px-4 py-2 bg-slate-50">
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">{l.designation}</p>
+                    </div>
+                  ) : (
+                    <div key={i} className="px-4 py-3">
+                      <p className="font-medium text-slate-900 text-sm">{l.designation}</p>
+                      {l.description && <p className="text-xs text-slate-500 mt-0.5">{l.description}</p>}
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-xs text-slate-500">
+                          {l.quantite} {l.unite} × {l.prixUnitaireHT.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}
+                        </span>
+                        <span className="text-sm font-semibold text-slate-900 tabular-nums">
+                          {l.totalHtNet.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+
+            {/* Totaux */}
+            <div className="bg-white rounded-2xl border border-slate-100 p-4">
+              <div className="space-y-2 text-sm">
+                {devis.totalRemise > 0.005 && (
+                  <div className="flex justify-between text-slate-500">
+                    <span>Remise</span>
+                    <span>− {devis.totalRemise.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-slate-600">
+                  <span>Total HT</span>
+                  <span className="tabular-nums">
+                    {(devis.totalHT - devis.totalRemise).toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}
+                  </span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>TVA</span>
+                  <span className="tabular-nums">
+                    {devis.totalTva.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}
+                  </span>
+                </div>
+                <div className="flex justify-between font-bold text-base pt-2 border-t border-slate-100">
+                  <span>Total TTC</span>
+                  <span className="tabular-nums">
+                    {devis.totalTTC.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Notes */}
+            {devis.notes && (
+              <div className="bg-white rounded-2xl border border-slate-100 p-4">
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Notes</p>
+                <p className="text-sm text-slate-700 whitespace-pre-wrap">{devis.notes}</p>
+              </div>
+            )}
+
+            {/* Signature */}
+            {devis.signatureClientNom && devis.dateSignature && (
+              <div className="bg-emerald-50 rounded-2xl border border-emerald-200 p-4">
+                <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-2">✓ Devis signé</p>
+                <p className="text-sm text-emerald-800">
+                  Par <span className="font-semibold">{devis.signatureClientNom}</span>
+                </p>
+                <p className="text-xs text-emerald-600 mt-0.5">{fmtDatetime(devis.dateSignature)}</p>
+              </div>
+            )}
+          </div>
+
+          {/* ── Vue desktop : aperçu PDF ────────────────────────────────────── */}
+          <div className="hidden md:block">
+            <DevisPreview
+              data={data}
+              signatureInfo={
+                (devis.signatureClientUrl || devis.signatureClient) && devis.signatureClientNom && devis.dateSignature
+                  ? {
+                      nom: devis.signatureClientNom,
+                      date: devis.dateSignature,
+                      imageSrc: devis.signatureClientUrl ?? devis.signatureClient ?? "",
+                    }
+                  : null
+              }
+            />
+          </div>
         </div>
 
         {/* Sidebar */}

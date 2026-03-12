@@ -141,7 +141,7 @@ export function DashboardShell({
         </header>
 
         {/* Contenu — padding bottom sur mobile pour la nav */}
-        <main className="flex-1 overflow-auto pb-16 md:pb-0">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16 md:pb-0">
           {children}
         </main>
       </div>
