@@ -397,7 +397,77 @@ export function FactureTable({ factures }: { factures: FactureRow[] }) {
 
   return (
     <>
-      <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-3">
+        {sorted.map((f) => {
+          const displayStatus = computeFactureStatus(f.status, new Date(f.dateEcheance))
+          const isLate = displayStatus === "EN_RETARD"
+          const isPaid = f.status === "PAYEE"
+          const resteAPayer = f.totalTTC - f.montantPaye
+          const canPay = f.status !== "PAYEE" && f.status !== "ANNULEE"
+          return (
+            <div key={f.id} className="bg-white rounded-2xl border border-slate-100 p-4">
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <Link href={`/factures/${f.id}`} className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                  {f.numero}
+                </Link>
+                <StatusBadge status={f.status} dateEcheance={new Date(f.dateEcheance)} />
+              </div>
+              <Link href={`/factures/${f.id}`} className="block mb-3">
+                <p className="font-medium text-slate-900 text-sm">{clientDisplayName(f.client)}</p>
+                <p className={`text-xs mt-0.5 ${isLate ? "text-red-600 font-semibold" : "text-slate-400"}`}>
+                  Échéance : {new Date(f.dateEcheance).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                  {isLate && " · En retard"}
+                </p>
+              </Link>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs text-slate-400">
+                  {new Date(f.dateEmission).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                </span>
+                <div className="text-right">
+                  <span className="text-base font-bold text-slate-900 tabular-nums">
+                    {f.totalTTC.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}
+                  </span>
+                  {!isPaid && f.montantPaye > 0 && (
+                    <p className="text-xs text-slate-400 tabular-nums">
+                      reste {resteAPayer.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 pt-3 border-t border-slate-50">
+                <Link
+                  href={`/factures/${f.id}`}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-slate-600 bg-slate-50 active:bg-slate-100 rounded-xl transition-colors"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  Voir
+                </Link>
+                <a
+                  href={`/api/factures/${f.id}/pdf`}
+                  download={`${f.numero}.pdf`}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-slate-600 bg-slate-50 active:bg-slate-100 rounded-xl transition-colors"
+                >
+                  <FileDown className="w-3.5 h-3.5" />
+                  PDF
+                </a>
+                {canPay && (
+                  <button
+                    onClick={() => setPaiementModal(f)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-emerald-600 bg-emerald-50 active:bg-emerald-100 rounded-xl transition-colors"
+                  >
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    Payer
+                  </button>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block bg-white rounded-2xl border border-slate-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
