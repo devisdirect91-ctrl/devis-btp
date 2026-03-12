@@ -8,7 +8,8 @@ import type { DevisPdfData } from "./types"
 export async function generateSignedPdfBuffer(
   pdfData: DevisPdfData,
   opts: {
-    signatureBase64: string
+    /** URL Supabase Storage ou data URL base64 de la signature */
+    signatureSrc: string
     signatairenom: string
     dateSignature: Date
   }
@@ -17,7 +18,7 @@ export async function generateSignedPdfBuffer(
     ...pdfData,
     devis: { ...pdfData.devis, status: "ACCEPTE" },
     signature: {
-      imageBase64: opts.signatureBase64,
+      imageSrc: opts.signatureSrc,
       signatairenom: opts.signatairenom,
       dateSignature: opts.dateSignature,
     },

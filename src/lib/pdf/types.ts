@@ -46,8 +46,8 @@ export type DevisPdfLigne = {
 
 /** Informations de signature pour le PDF signé */
 export type DevisPdfSignature = {
-  /** Data URL (image/png) de la signature manuscrite */
-  imageBase64: string
+  /** URL Supabase Storage ou data URL (image/png) de la signature manuscrite */
+  imageSrc: string
   /** Nom du signataire */
   signatairenom: string
   /** Horodatage exact */

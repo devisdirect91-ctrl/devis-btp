@@ -52,6 +52,7 @@ interface DevisData extends SignatureModalDevis {
   id: string
   status: string
   signatureClient?: string | null
+  signatureClientUrl?: string | null
   signatureClientNom?: string | null
   dateSignature?: string | null
 }
@@ -91,7 +92,9 @@ export function SignaturePage({ token, devis, client, lignes, user }: Props) {
   )
   const [signataireName, setSignataireName] = useState(devis.signatureClientNom ?? "")
   const [signedAt, setSignedAt] = useState<string | null>(devis.dateSignature ?? null)
-  const [signatureImg, setSignatureImg] = useState<string | null>(devis.signatureClient ?? null)
+  const [signatureImg, setSignatureImg] = useState<string | null>(
+    devis.signatureClientUrl ?? devis.signatureClient ?? null
+  )
   const [motifRefus, setMotifRefus] = useState("")
 
   const clientName = client.type === "PROFESSIONNEL" && client.societe

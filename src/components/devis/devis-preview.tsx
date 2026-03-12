@@ -54,7 +54,8 @@ function tvaDetails(
 interface SignatureInfo {
   nom: string
   date: Date
-  imageBase64: string
+  /** URL Supabase Storage ou data URL base64 */
+  imageSrc: string
 }
 
 interface DevisPreviewProps {
@@ -343,7 +344,7 @@ export function DevisPreview({ data: { devis: d, client, lignes, user }, signatu
             <div className="border border-emerald-200 bg-white rounded-lg p-2 h-20 w-36 flex items-center justify-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={signatureInfo.imageBase64}
+                src={signatureInfo.imageSrc}
                 alt="Signature"
                 className="max-h-full max-w-full object-contain"
               />

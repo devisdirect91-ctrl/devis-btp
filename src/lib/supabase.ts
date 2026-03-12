@@ -15,7 +15,29 @@ export const supabaseAdmin = createClient(
 export const STORAGE_BUCKETS = {
   LOGOS: "logos",
   PDFS: "pdfs",
+  SIGNATURES: "signatures",
 } as const;
+
+/** Upload une signature (base64 data URL) vers Supabase Storage et retourne l'URL publique */
+export async function uploadSignatureBase64(
+  userId: string,
+  devisId: string,
+  base64DataUrl: string
+): Promise<string> {
+  // Extrait le contenu binaire depuis le data URL
+  const base64 = base64DataUrl.replace(/^data:image\/\w+;base64,/, "")
+  const buffer = Buffer.from(base64, "base64")
+  const path = `${userId}/${devisId}/signature.png`
+
+  const { error } = await supabaseAdmin.storage
+    .from(STORAGE_BUCKETS.SIGNATURES)
+    .upload(path, buffer, { contentType: "image/png", upsert: true })
+
+  if (error) throw error
+
+  const { data } = supabaseAdmin.storage.from(STORAGE_BUCKETS.SIGNATURES).getPublicUrl(path)
+  return data.publicUrl
+}
 
 export async function uploadFile(
   bucket: string,

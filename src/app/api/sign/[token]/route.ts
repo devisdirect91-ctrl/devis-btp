@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { headers } from "next/headers"
 import { sendEmail, emailSignatureConfirmationClient, emailSignatureNotificationArtisan } from "@/lib/email"
 import { generateSignedPdfBuffer, uploadSignedPdf } from "@/lib/pdf/generate-signed-pdf"
+import { uploadSignatureBase64 } from "@/lib/supabase"
 import type { DevisPdfData } from "@/lib/pdf/types"
 
 async function getDevisByToken(token: string) {
@@ -139,6 +140,7 @@ export async function GET(
       notes: devis.notes,
       mentionsLegales: devis.mentionsLegales,
       signatureClient: devis.signatureClient,
+      signatureClientUrl: devis.signatureClientUrl,
       signatureClientNom: devis.signatureClientNom,
       dateSignature: devis.dateSignature,
     },
@@ -194,13 +196,26 @@ export async function POST(
 
   const dateSignature = new Date()
 
+  // Upload de la signature vers Supabase Storage (hors DB)
+  let signatureClientUrl: string | null = null
+  if (action === "ACCEPTE" && signatureBase64) {
+    try {
+      signatureClientUrl = await uploadSignatureBase64(devis.userId, devis.id, signatureBase64)
+    } catch (err) {
+      console.error("[sign] upload signature error:", err)
+      // Non-fatal : fallback sur stockage base64 en DB
+    }
+  }
+
   await prisma.devis.update({
     where: { id: devis.id },
     data: {
       status: action,
       dateSignature,
       signatureClientNom: nom || null,
-      signatureClient: signatureBase64 || null,
+      // Si l'upload Storage a réussi → on stocke uniquement l'URL, pas le base64
+      signatureClient: signatureClientUrl ? null : (signatureBase64 || null),
+      signatureClientUrl: signatureClientUrl ?? null,
       signatureClientIp: ip,
       signatureUserAgent: userAgent,
       ...(action === "REFUSE" ? { motifRefus: motif?.trim() || null } : {}),
@@ -232,7 +247,7 @@ export async function POST(
         const pdfData = buildPdfData(devis)
 
         pdfBuffer = await generateSignedPdfBuffer(pdfData, {
-          signatureBase64,
+          signatureSrc: signatureClientUrl ?? signatureBase64,
           signatairenom: nom || clientName,
           dateSignature,
         })

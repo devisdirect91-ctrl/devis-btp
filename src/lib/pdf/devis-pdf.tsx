@@ -613,7 +613,7 @@ export function DevisPDF({ devis: d, client, lignes, user, signature }: DevisPdf
                 </View>
 
                 <View style={styles.signedImageBox}>
-                  <Image style={styles.signedImage} src={signature.imageBase64} />
+                  <Image style={styles.signedImage} src={signature.imageSrc} />
                 </View>
               </View>
             </View>

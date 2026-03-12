@@ -88,6 +88,7 @@ export default async function SignerPage({ params }: Props) {
         notes: devis.notes,
         mentionsLegales: devis.mentionsLegales,
         signatureClient: devis.signatureClient,
+        signatureClientUrl: devis.signatureClientUrl,
         signatureClientNom: devis.signatureClientNom,
         dateSignature: devis.dateSignature?.toISOString() ?? null,
       }}

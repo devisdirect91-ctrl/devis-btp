@@ -292,11 +292,11 @@ export default async function DevisDetailPage({
           <DevisPreview
             data={data}
             signatureInfo={
-              devis.signatureClient && devis.signatureClientNom && devis.dateSignature
+              (devis.signatureClientUrl || devis.signatureClient) && devis.signatureClientNom && devis.dateSignature
                 ? {
                     nom: devis.signatureClientNom,
                     date: devis.dateSignature,
-                    imageBase64: devis.signatureClient,
+                    imageSrc: devis.signatureClientUrl ?? devis.signatureClient ?? "",
                   }
                 : null
             }

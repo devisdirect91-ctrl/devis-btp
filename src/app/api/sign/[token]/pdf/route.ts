@@ -99,7 +99,7 @@ export async function GET(
   }
 
   const buffer = await generateSignedPdfBuffer(pdfData, {
-    signatureBase64: devis.signatureClient ?? "",
+    signatureSrc: devis.signatureClientUrl ?? devis.signatureClient ?? "",
     signatairenom: devis.signatureClientNom ?? "",
     dateSignature: devis.dateSignature ?? new Date(),
   })
