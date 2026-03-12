@@ -30,12 +30,14 @@ export type FactureRow = {
   dateEmission: Date
   dateEcheance: Date
   datePaiement?: Date | null
+  dateEnvoi?: Date | null
   totalTTC: number
   totalHT: number
   montantPaye: number
   modePaiement?: string | null
   client: ClientRow
   devis?: { id: string; numero: string } | null
+  consulted?: boolean
 }
 
 type SortKey = "numero" | "client" | "dateEmission" | "dateEcheance" | "totalTTC" | "status"
@@ -303,6 +305,36 @@ function StatusBadge({ status, dateEcheance }: { status: string; dateEcheance: D
   )
 }
 
+// ─── Tracking badge ───────────────────────────────────────────────────────────
+
+function TrackingBadge({ dateEnvoi, consulted, status }: {
+  dateEnvoi?: Date | null
+  consulted?: boolean
+  status: string
+}) {
+  if (status === "PAYEE") return null // statut paiement suffit
+  if (consulted) {
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+        <Eye className="w-2.5 h-2.5" />
+        Vue ✓
+      </span>
+    )
+  }
+  if (dateEnvoi) {
+    return (
+      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+        Envoyée
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">
+      À envoyer
+    </span>
+  )
+}
+
 // ─── Main table ───────────────────────────────────────────────────────────────
 
 export function FactureTable({ factures }: { factures: FactureRow[] }) {
@@ -400,6 +432,7 @@ export function FactureTable({ factures }: { factures: FactureRow[] }) {
                     Statut <SortIcon col="status" active={sortCol} dir={sortDir} />
                   </button>
                 </th>
+                <th className="px-3 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Envoi</th>
                 <th className="w-10 px-3 py-3" />
               </tr>
             </thead>
@@ -451,6 +484,9 @@ export function FactureTable({ factures }: { factures: FactureRow[] }) {
                     </td>
                     <td className="px-3 py-3.5">
                       <StatusBadge status={f.status} dateEcheance={new Date(f.dateEcheance)} />
+                    </td>
+                    <td className="px-3 py-3.5">
+                      <TrackingBadge dateEnvoi={f.dateEnvoi} consulted={f.consulted} status={f.status} />
                     </td>
                     <td className="px-3 py-3.5">
                       <RowActions

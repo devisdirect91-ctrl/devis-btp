@@ -51,11 +51,18 @@ function tvaDetails(
     .map(([taux, v]) => ({ taux, ...v }))
 }
 
-interface DevisPreviewProps {
-  data: DevisPdfData
+interface SignatureInfo {
+  nom: string
+  date: Date
+  imageBase64: string
 }
 
-export function DevisPreview({ data: { devis: d, client, lignes, user } }: DevisPreviewProps) {
+interface DevisPreviewProps {
+  data: DevisPdfData
+  signatureInfo?: SignatureInfo | null
+}
+
+export function DevisPreview({ data: { devis: d, client, lignes, user }, signatureInfo }: DevisPreviewProps) {
   const primary = user.couleurPrimaire ?? "#1d4ed8"
 
   const clientName =
@@ -305,23 +312,63 @@ export function DevisPreview({ data: { devis: d, client, lignes, user } }: Devis
       </div>
 
       {/* ── Signature ──────────────────────────────────────────────────────── */}
-      <div className="mx-10 mb-6 border border-slate-200 rounded-xl p-5">
-        <p className="font-bold text-[10px] uppercase tracking-wider mb-4" style={{ color: primary }}>
-          Bon pour accord
-        </p>
-        <div className="flex gap-8">
-          <div className="w-32">
-            <p className="text-xs text-slate-500 mb-2">Date :</p>
-            <div className="h-16 border border-slate-200 rounded-lg" />
-          </div>
-          <div className="flex-1">
-            <p className="text-xs text-slate-500 mb-2">
-              Signature (précédée de la mention « Lu et approuvé ») :
+      {signatureInfo ? (
+        <div className="mx-10 mb-6 border border-emerald-300 bg-emerald-50 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+              <svg viewBox="0 0 12 12" fill="none" className="w-2.5 h-2.5">
+                <path d="M2 6l3 3 5-5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <p className="font-bold text-[10px] uppercase tracking-wider text-emerald-700">
+              Devis accepté et signé électroniquement
             </p>
-            <div className="h-16 border border-slate-200 rounded-lg" />
+          </div>
+          <div className="flex gap-6 items-start">
+            <div className="flex-1 space-y-1.5 text-[11px]">
+              <div className="flex gap-2">
+                <span className="text-slate-500 w-20 flex-shrink-0">Signataire</span>
+                <span className="font-semibold text-slate-800">{signatureInfo.nom}</span>
+              </div>
+              <div className="flex gap-2">
+                <span className="text-slate-500 w-20 flex-shrink-0">Date</span>
+                <span className="font-semibold text-slate-800">
+                  {new Date(signatureInfo.date).toLocaleDateString("fr-FR", {
+                    day: "2-digit", month: "2-digit", year: "numeric",
+                    hour: "2-digit", minute: "2-digit",
+                  })}
+                </span>
+              </div>
+            </div>
+            <div className="border border-emerald-200 bg-white rounded-lg p-2 h-20 w-36 flex items-center justify-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={signatureInfo.imageBase64}
+                alt="Signature"
+                className="max-h-full max-w-full object-contain"
+              />
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="mx-10 mb-6 border border-slate-200 rounded-xl p-5">
+          <p className="font-bold text-[10px] uppercase tracking-wider mb-4" style={{ color: primary }}>
+            Bon pour accord
+          </p>
+          <div className="flex gap-8">
+            <div className="w-32">
+              <p className="text-xs text-slate-500 mb-2">Date :</p>
+              <div className="h-16 border border-slate-200 rounded-lg" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs text-slate-500 mb-2">
+                Signature (précédée de la mention « Lu et approuvé ») :
+              </p>
+              <div className="h-16 border border-slate-200 rounded-lg" />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Footer ─────────────────────────────────────────────────────────── */}
       {(d.mentionsLegales || user.assuranceNom) && (

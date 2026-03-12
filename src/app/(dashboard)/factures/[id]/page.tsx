@@ -14,6 +14,7 @@ import {
 } from "@/lib/facture-utils"
 import { FactureDetailActions } from "@/components/factures/facture-detail-actions"
 import { PaiementsSection } from "@/components/factures/PaiementsSection"
+import { SendFactureEmailButton } from "@/components/factures/SendFactureEmailButton"
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -58,6 +59,7 @@ export default async function FactureDetailPage({
         lignes: { orderBy: { ordre: "asc" } },
         acomptes: { orderBy: { datePaiement: "asc" } },
         devis: { select: { id: true, numero: true, titre: true } },
+        tokens: { orderBy: { createdAt: "desc" }, take: 1, select: { consultedAt: true, createdAt: true } },
       },
     }),
     prisma.user.findUnique({
@@ -107,6 +109,7 @@ export default async function FactureDetailPage({
 
           {/* Quick actions */}
           <div className="flex items-center gap-2">
+            <SendFactureEmailButton factureId={facture.id} clientEmail={facture.client.email} />
             <a
               href={`/api/factures/${facture.id}/pdf`}
               download={`${facture.numero}.pdf`}
@@ -324,6 +327,34 @@ export default async function FactureDetailPage({
                     <span className={isLate ? "text-red-500 font-medium" : "text-slate-500"}>Reste</span>
                     <span className={`font-bold ${isLate ? "text-red-600" : "text-slate-900"}`}>{eur(resteAPayer)}</span>
                   </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Suivi envoi */}
+          <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-3">
+            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Suivi</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Envoyée</span>
+                {facture.dateEnvoi ? (
+                  <span className="text-slate-700 text-xs">{fmtDate(facture.dateEnvoi)}</span>
+                ) : (
+                  <span className="text-xs text-slate-400 italic">Non envoyée</span>
+                )}
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Consultée</span>
+                {facture.tokens[0]?.consultedAt ? (
+                  <span className="inline-flex items-center gap-1 text-xs text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
+                    <CheckCircle2 className="w-3 h-3" />
+                    {fmtDate(facture.tokens[0].consultedAt)}
+                  </span>
+                ) : facture.dateEnvoi ? (
+                  <span className="text-xs text-amber-600 italic">Pas encore consultée</span>
+                ) : (
+                  <span className="text-xs text-slate-400 italic">—</span>
                 )}
               </div>
             </div>

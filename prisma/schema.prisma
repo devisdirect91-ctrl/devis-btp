@@ -3,7 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Account {
@@ -234,11 +236,12 @@ model Facture {
   userId          String
   clientId        String
   devisId         String?       @unique
-  numero          String        @unique // Format: FAC-2026-001
+  numero          String        // Format: FAC-2026-001 (unique par userId via @@unique ci-dessous)
   numeroAnnee     Int
   numeroSequence  Int
   dateEmission    DateTime      @default(now())
   dateEcheance    DateTime
+  dateEnvoi       DateTime?
   totalHT         Float         @default(0)
   totalTva        Float         @default(0)
   totalTTC        Float         @default(0)
@@ -256,6 +259,7 @@ model Facture {
   devis           Devis?        @relation(fields: [devisId], references: [id])
   lignes          FactureLigne[]
   acomptes        Acompte[]
+  tokens          FactureToken[]
 
   @@unique([userId, numeroAnnee, numeroSequence])
   @@index([userId])
@@ -263,6 +267,19 @@ model Facture {
   @@index([userId, status])
   @@index([userId, numeroAnnee])
   @@index([devisId])
+}
+
+model FactureToken {
+  id          String    @id @default(uuid())
+  factureId   String
+  token       String    @unique
+  expiresAt   DateTime
+  consultedAt DateTime?
+  consultedIp String?
+  createdAt   DateTime  @default(now())
+  facture     Facture   @relation(fields: [factureId], references: [id], onDelete: Cascade)
+
+  @@index([factureId])
 }
 
 model FactureLigne {

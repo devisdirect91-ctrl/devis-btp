@@ -52,10 +52,6 @@ export type DevisPdfSignature = {
   signatairenom: string
   /** Horodatage exact */
   dateSignature: Date
-  /** URL de la page de vérification */
-  verifyUrl: string
-  /** Data URL PNG du QR code */
-  qrDataUrl: string
 }
 
 export type DevisPdfData = {

@@ -229,15 +229,12 @@ export async function POST(
       let pdfBuffer: Buffer | null = null
 
       if (action === "ACCEPTE" && signatureBase64) {
-        const verifyUrl = `${appUrl}/verify/${devis.signatureToken}`
         const pdfData = buildPdfData(devis)
 
-        // Génère le PDF signé avec signature + QR code
         pdfBuffer = await generateSignedPdfBuffer(pdfData, {
           signatureBase64,
           signatairenom: nom || clientName,
           dateSignature,
-          verifyUrl,
         })
 
         // Upload vers Supabase Storage

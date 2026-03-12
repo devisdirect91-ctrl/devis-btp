@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { renderToBuffer } from "@react-pdf/renderer"
 import { DevisPDF } from "@/lib/pdf/devis-pdf"
+import { generateSignedPdfBuffer } from "@/lib/pdf/generate-signed-pdf"
 import { createElement } from "react"
 import type { DevisPdfData } from "@/lib/pdf/types"
 
@@ -24,6 +25,11 @@ export async function GET(
     },
   })
   if (!devis) return NextResponse.json({ error: "Devis introuvable" }, { status: 404 })
+
+  // Si le PDF signé est déjà stocké dans Supabase → redirect direct
+  if (devis.signedPdfUrl) {
+    return NextResponse.redirect(devis.signedPdfUrl)
+  }
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
@@ -98,8 +104,25 @@ export async function GET(
     user: user ?? {},
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const buffer = await renderToBuffer(createElement(DevisPDF, data) as any)
+  let buffer: Buffer
+
+  // Si le devis est signé mais que l'upload Supabase avait échoué → génère à la volée
+  if (
+    devis.status === "ACCEPTE" &&
+    devis.signatureClient &&
+    devis.signatureClientNom &&
+    devis.dateSignature &&
+    devis.signatureToken
+  ) {
+    buffer = await generateSignedPdfBuffer(data, {
+      signatureBase64: devis.signatureClient,
+      signatairenom: devis.signatureClientNom,
+      dateSignature: devis.dateSignature,
+    })
+  } else {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    buffer = Buffer.from(await renderToBuffer(createElement(DevisPDF, data) as any))
+  }
 
   return new Response(new Uint8Array(buffer), {
     headers: {

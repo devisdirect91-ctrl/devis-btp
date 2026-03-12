@@ -83,6 +83,7 @@ export default async function FacturesPage({ searchParams }: PageProps) {
       include: {
         client: { select: { id: true, nom: true, prenom: true, societe: true, type: true, email: true } },
         devis: { select: { id: true, numero: true } },
+        tokens: { select: { consultedAt: true }, orderBy: { createdAt: "desc" }, take: 1 },
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -157,7 +158,10 @@ export default async function FacturesPage({ searchParams }: PageProps) {
         </Suspense>
 
         {/* Table */}
-        <FactureTable factures={factureList as any} />
+        <FactureTable factures={factureList.map((f) => ({
+          ...f,
+          consulted: (f as any).tokens?.[0]?.consultedAt != null,
+        })) as any} />
       </div>
     </div>
   )

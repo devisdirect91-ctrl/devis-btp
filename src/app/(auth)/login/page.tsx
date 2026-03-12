@@ -2,7 +2,7 @@
 
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import Link from "next/link"
 import { Barlow_Condensed, DM_Sans } from "next/font/google"
 import { Mail, Lock, Eye, EyeOff, HardHat, ArrowRight, Loader2, AlertCircle, CheckCircle } from "lucide-react"
@@ -11,7 +11,7 @@ import { AuthRightPanel } from "@/components/auth/AuthRightPanel"
 const barlow = Barlow_Condensed({ subsets: ["latin"], weight: ["700", "800", "900"], variable: "--font-barlow" })
 const dm = DM_Sans({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-dm" })
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const justRegistered = searchParams.get("registered") === "true"
@@ -204,5 +204,17 @@ export default function LoginPage() {
         .animate-shake { animation: shake 0.5s ease-in-out; }
       `}</style>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }

@@ -30,9 +30,6 @@ export async function GET(
   }
 
   // Fallback : régénérer le PDF signé à la volée
-  const appUrl = process.env.NEXTAUTH_URL ?? "https://devis-btp.fr"
-  const verifyUrl = `${appUrl}/verify/${devis.signatureToken}`
-
   const pdfData: DevisPdfData = {
     devis: {
       numero: devis.numero,
@@ -105,7 +102,6 @@ export async function GET(
     signatureBase64: devis.signatureClient ?? "",
     signatairenom: devis.signatureClientNom ?? "",
     dateSignature: devis.dateSignature ?? new Date(),
-    verifyUrl,
   })
 
   return new Response(new Uint8Array(buffer), {

@@ -7,6 +7,7 @@ import { ArrowLeft, Clock, CheckCircle2, Circle, Send, FileCheck, XCircle, Calen
 import { DevisPreview } from "@/components/devis/devis-preview"
 import { DevisActions } from "@/components/devis/devis-actions"
 import { GenerateInvoiceButton } from "@/components/devis/GenerateInvoiceButton"
+import { SendEmailButton } from "@/components/devis/SendEmailButton"
 import { STATUS_LABELS, STATUS_STYLES, clientDisplayName } from "@/lib/client-utils"
 import type { DevisPdfData } from "@/lib/pdf/types"
 
@@ -266,6 +267,7 @@ export default async function DevisDetailPage({
               </span>
             </div>
           </div>
+          <SendEmailButton devisId={devis.id} status={devis.status} />
           <DevisActions
             devisId={devis.id}
             numero={devis.numero}
@@ -287,7 +289,18 @@ export default async function DevisDetailPage({
       <div className="max-w-7xl mx-auto px-4 py-8 flex gap-6 items-start print:p-0 print:gap-0">
         {/* Preview */}
         <div className="flex-1 min-w-0 print:flex-1">
-          <DevisPreview data={data} />
+          <DevisPreview
+            data={data}
+            signatureInfo={
+              devis.signatureClient && devis.signatureClientNom && devis.dateSignature
+                ? {
+                    nom: devis.signatureClientNom,
+                    date: devis.dateSignature,
+                    imageBase64: devis.signatureClient,
+                  }
+                : null
+            }
+          />
         </div>
 
         {/* Sidebar */}

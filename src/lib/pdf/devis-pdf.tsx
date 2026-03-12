@@ -25,7 +25,10 @@ const UNITE_LABELS: Record<string, string> = {
 }
 
 function eur(n: number): string {
-  return n.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })
+  return n
+    .toLocaleString("fr-FR", { style: "currency", currency: "EUR" })
+    .replace(/\u00a0/g, " ")
+    .replace(/\u202f/g, " ")
 }
 
 function fmtDate(d: Date | null | undefined): string {
@@ -264,7 +267,6 @@ const makeStyles = (primary: string) =>
     },
     signedBody: { flexDirection: "row", gap: 16, alignItems: "flex-start" },
     signedLeft: { flex: 1 },
-    signedRight: { width: 80, alignItems: "center" },
     signedMetaRow: { flexDirection: "row", marginBottom: 4 },
     signedMetaLabel: { fontSize: 8, color: "#374151", width: 80 },
     signedMetaValue: { fontSize: 8, color: "#0f172a", fontFamily: "Helvetica-Bold", flex: 1 },
@@ -288,9 +290,6 @@ const makeStyles = (primary: string) =>
       marginTop: 8,
       fontStyle: "italic",
     },
-    qrBlock: { alignItems: "center" },
-    qrImage: { width: 60, height: 60 },
-    qrLabel: { fontSize: 6, color: "#6b7280", textAlign: "center", marginTop: 3, lineHeight: 1.4 },
     // Footer
     pageNumber: {
       position: "absolute",
@@ -599,7 +598,6 @@ export function DevisPDF({ devis: d, client, lignes, user, signature }: DevisPdf
             </View>
 
             <View style={styles.signedBody}>
-              {/* Left: metadata + signature image */}
               <View style={styles.signedLeft}>
                 <View style={styles.signedMetaRow}>
                   <Text style={styles.signedMetaLabel}>Signataire :</Text>
@@ -614,21 +612,14 @@ export function DevisPDF({ devis: d, client, lignes, user, signature }: DevisPdf
                   <Text style={styles.signedMetaValue}>{d.numero}</Text>
                 </View>
 
-                {/* Signature image */}
                 <View style={styles.signedImageBox}>
                   <Image style={styles.signedImage} src={signature.imageBase64} />
                 </View>
               </View>
-
-              {/* Right: QR code */}
-              <View style={styles.qrBlock}>
-                <Image style={styles.qrImage} src={signature.qrDataUrl} />
-                <Text style={styles.qrLabel}>Scannez pour{"\n"}vérifier</Text>
-              </View>
             </View>
 
             <Text style={styles.signedLegalNote}>
-              Signature électronique valide selon l'article 1367 du Code civil. Ce document constitue un engagement contractuel. URL de vérification : {signature.verifyUrl}
+              Document signé électroniquement le {fmtDatetime(signature.dateSignature)} par {signature.signatairenom || "—"}. Conformément aux articles 1366 et 1367 du Code civil français.
             </Text>
           </View>
         ) : (

@@ -135,7 +135,6 @@ export async function DELETE(
   const { id } = await params
   const existing = await getOwned(id, session.user.id)
   if (!existing) return NextResponse.json({ error: "Devis introuvable" }, { status: 404 })
-
   await prisma.devis.delete({ where: { id } })
   return NextResponse.json({ success: true })
 }
