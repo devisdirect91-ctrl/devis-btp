@@ -7,6 +7,7 @@ import { ClientSelect } from "./client-select"
 import { LignesEditor } from "./lignes-editor"
 import { DevisTotals } from "./devis-totals"
 import { CataloguePicker } from "./catalogue-picker"
+import { MobileDevisWizard } from "./MobileDevisWizard"
 import { computeDevisTotaux, newLigne } from "@/lib/devis-utils"
 import type { EditorLigne } from "@/lib/devis-utils"
 
@@ -175,7 +176,39 @@ export function DevisEditor({
         onAdd={handleAddFromCatalogue}
       />
 
-      <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+      {/* Mobile wizard */}
+      <div className="md:hidden">
+        <MobileDevisWizard
+          editId={editId}
+          numero={numeroVal}
+          clientId={clientId}
+          onClientChange={setClientId}
+          lignes={lignes}
+          onLignesChange={setLignes}
+          tauxTvaDefaut={tauxTvaDefaut}
+          onOpenCatalogue={() => setIsCatalogueOpen(true)}
+          titre={titre}
+          onTitreChange={setTitre}
+          dateEmission={dateEmission}
+          onDateEmissionChange={setDateEmission}
+          validiteJours={validiteJours}
+          onValiditeJoursChange={setValiditeJours}
+          adresseChantier={adresseChantier}
+          onAdresseChantierChange={setAdresseChantier}
+          notes={notes}
+          onNotesChange={setNotes}
+          conditionsPaiement={conditionsPaiement}
+          onConditionsPaiementChange={setConditionsPaiement}
+          totaux={totaux}
+          isSaving={isSaving}
+          errors={errors}
+          onSave={save}
+          onBack={() => router.back()}
+        />
+      </div>
+
+      {/* Desktop form */}
+      <div className="hidden md:block max-w-7xl mx-auto px-4 py-8 space-y-6">
         {/* Top bar */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
