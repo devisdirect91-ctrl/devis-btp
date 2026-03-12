@@ -211,6 +211,7 @@ model CatalogItem {
   @@index([userId])
   @@index([userId, category])
   @@index([userId, actif])
+  @@index([userId, designation])
 }
 
 model SignatureLog {

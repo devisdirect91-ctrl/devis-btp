@@ -1,10 +1,13 @@
 "use client"
 
+import { useRef } from "react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { GripVertical, Trash2, Copy } from "lucide-react"
 import { UNITE_LABELS, TVA_TAUX } from "@/lib/devis-utils"
 import type { EditorLigne } from "@/lib/devis-utils"
+import { CatalogAutocomplete } from "@/components/devis/CatalogAutocomplete"
+import type { CatalogSuggestion } from "@/components/devis/CatalogAutocomplete"
 
 interface LigneRowProps {
   ligne: EditorLigne
@@ -15,6 +18,20 @@ interface LigneRowProps {
 
 export function LigneRow({ ligne, onChange, onDelete, onDuplicate }: LigneRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: ligne.id })
+  const quantiteRef = useRef<HTMLInputElement>(null)
+
+  const handleCatalogSelect = (item: CatalogSuggestion) => {
+    onChange(ligne.id, {
+      designation: item.designation,
+      description: item.description ?? "",
+      prixUnitaireHT: item.prixHT,
+      unite: item.unite,
+      tauxTva: item.tauxTva,
+      catalogItemId: item.id,
+    })
+    // Focus sur le champ quantité après sélection
+    setTimeout(() => quantiteRef.current?.focus(), 50)
+  }
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -85,12 +102,10 @@ export function LigneRow({ ligne, onChange, onDelete, onDuplicate }: LigneRowPro
         </button>
 
         <div className="flex-1 min-w-0">
-          <input
-            type="text"
+          <CatalogAutocomplete
             value={ligne.designation}
-            onChange={(e) => onChange(ligne.id, { designation: e.target.value })}
-            placeholder="Désignation de la prestation…"
-            className="w-full px-2 py-1 text-sm font-medium text-slate-900 border-0 bg-transparent focus:outline-none focus:ring-0 placeholder:text-slate-300"
+            onChange={(val) => onChange(ligne.id, { designation: val })}
+            onSelect={handleCatalogSelect}
           />
           <input
             type="text"
@@ -125,6 +140,7 @@ export function LigneRow({ ligne, onChange, onDelete, onDuplicate }: LigneRowPro
         <div className="flex flex-col min-w-0">
           <label className="text-[10px] text-slate-400 mb-0.5">Qté</label>
           <input
+            ref={quantiteRef}
             type="number"
             min="0"
             step="any"
