@@ -27,4 +27,39 @@ body {
 
 input, textarea, select {
   color: #1e293b;
+  /* Empêche le zoom auto sur les inputs iOS (min 16px) */
+  font-size: max(16px, 1em);
+}
+
+/* ── Mobile / Touch ─────────────────────────────────────────────────────────── */
+
+/* Supprime le flash bleu au tap sur mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe area iPhone (notch + home bar) */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Scroll mobile fluide */
+.overflow-auto,
+.overflow-y-auto,
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Inputs plus grands sur mobile pour faciliter la frappe */
+@media (max-width: 767px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="tel"],
+  textarea {
+    min-height: 44px;
+  }
 }
