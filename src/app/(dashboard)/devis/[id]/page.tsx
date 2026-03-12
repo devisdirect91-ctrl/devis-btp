@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { ArrowLeft, Clock, CheckCircle2, Circle, Send, FileCheck, XCircle, CalendarClock, Copy, Receipt } from "lucide-react"
+import { ArrowLeft, Clock, CheckCircle2, Circle, Send, FileCheck, XCircle, CalendarClock, Copy, Receipt, FileDown, Edit } from "lucide-react"
 import { DevisPreview } from "@/components/devis/devis-preview"
 import { DevisActions } from "@/components/devis/devis-actions"
 import { GenerateInvoiceButton } from "@/components/devis/GenerateInvoiceButton"
@@ -267,14 +267,16 @@ export default async function DevisDetailPage({
               </span>
             </div>
           </div>
-          <SendEmailButton devisId={devis.id} status={devis.status} />
-          <DevisActions
-            devisId={devis.id}
-            numero={devis.numero}
-            status={devis.status}
-            canEdit={devis.status === "BROUILLON" || devis.status === "ENVOYE"}
-            signatureToken={devis.signatureToken}
-          />
+          <div className="hidden md:flex items-center gap-2">
+            <SendEmailButton devisId={devis.id} status={devis.status} />
+            <DevisActions
+              devisId={devis.id}
+              numero={devis.numero}
+              status={devis.status}
+              canEdit={devis.status === "BROUILLON" || devis.status === "ENVOYE"}
+              signatureToken={devis.signatureToken}
+            />
+          </div>
         </div>
       </div>
 
@@ -285,10 +287,32 @@ export default async function DevisDetailPage({
         }
       `}</style>
 
+      {/* Mobile action bar */}
+      <div className="md:hidden bg-white border-b border-slate-100 px-4 py-3 flex gap-2 print:hidden">
+        <a
+          href={`/api/devis/${devis.id}/pdf`}
+          download={`${devis.numero}.pdf`}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium text-emerald-700 bg-emerald-50 active:bg-emerald-100 rounded-xl transition-colors"
+        >
+          <FileDown className="w-4 h-4" />
+          PDF
+        </a>
+        {(devis.status === "BROUILLON" || devis.status === "ENVOYE") && (
+          <a
+            href={`/devis/${devis.id}/modifier`}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium text-blue-700 bg-blue-50 active:bg-blue-100 rounded-xl transition-colors"
+          >
+            <Edit className="w-4 h-4" />
+            Modifier
+          </a>
+        )}
+        <SendEmailButton devisId={devis.id} status={devis.status} />
+      </div>
+
       {/* Main layout: preview left, sidebar right */}
-      <div className="max-w-7xl mx-auto px-4 py-8 flex gap-6 items-start print:p-0 print:gap-0">
+      <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row gap-6 items-start print:p-0 print:gap-0">
         {/* Preview */}
-        <div className="flex-1 min-w-0 print:flex-1">
+        <div className="flex-1 min-w-0 w-full print:flex-1">
           <DevisPreview
             data={data}
             signatureInfo={
@@ -304,7 +328,7 @@ export default async function DevisDetailPage({
         </div>
 
         {/* Sidebar */}
-        <div className="w-72 flex-shrink-0 space-y-4 print:hidden">
+        <div className="w-full md:w-72 md:flex-shrink-0 space-y-4 print:hidden">
           {/* Résumé */}
           <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-3">
             <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Résumé</h3>

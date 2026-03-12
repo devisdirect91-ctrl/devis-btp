@@ -169,107 +169,140 @@ export default async function DashboardPage() {
             </Link>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
-                    Numéro
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
-                    Client / Objet
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
-                    Date
-                  </th>
-                  <th className="text-right px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
-                    Montant TTC
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
-                    Statut
-                  </th>
-                  <th className="text-right px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {recentDevis.map((devis) => (
-                  <tr
-                    key={devis.id}
-                    className="hover:bg-slate-50 transition-colors group"
-                  >
-                    <td className="px-6 py-4">
+          <>
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-slate-50">
+              {recentDevis.map((devis) => (
+                <Link
+                  key={devis.id}
+                  href={`/devis/${devis.id}`}
+                  className="flex items-start justify-between gap-3 px-4 py-4 active:bg-slate-50 transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
                         {devis.numero}
                       </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="font-medium text-slate-900 text-sm">{devis.titre}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">{clientDisplayName(devis.client)}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-slate-500">
-                        {new Date(devis.dateEmission).toLocaleDateString("fr-FR", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="text-sm font-semibold text-slate-900 tabular-nums">
-                        {devis.totalTTC.toLocaleString("fr-FR", {
-                          style: "currency",
-                          currency: "EUR",
-                        })}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <StatusBadge devisId={devis.id} status={devis.status} />
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Link
-                          href={`/devis/${devis.id}`}
-                          title="Voir le devis"
-                          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Link>
-                        <Link
-                          href={`/devis/${devis.id}/dupliquer`}
-                          title="Dupliquer"
-                          className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-amber-50 text-slate-400 hover:text-amber-600 transition-colors"
-                        >
-                          <Copy className="w-4 h-4" />
-                        </Link>
-                        {devis.pdfUrl ? (
-                          <a
-                            href={devis.pdfUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Télécharger le PDF"
-                            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 transition-colors"
-                          >
-                            <FileDown className="w-4 h-4" />
-                          </a>
-                        ) : (
-                          <button
-                            title="PDF non disponible"
-                            disabled
-                            className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-200 cursor-not-allowed"
-                          >
-                            <FileDown className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
+                    </div>
+                    <p className="font-medium text-slate-900 text-sm truncate">{devis.titre}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{clientDisplayName(devis.client)}</p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      {new Date(devis.dateEmission).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                    <span className="text-sm font-bold text-slate-900 tabular-nums">
+                      {devis.totalTTC.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}
+                    </span>
+                    <StatusBadge devisId={devis.id} status={devis.status} />
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                      Numéro
+                    </th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                      Client / Objet
+                    </th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                      Date
+                    </th>
+                    <th className="text-right px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                      Montant TTC
+                    </th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                      Statut
+                    </th>
+                    <th className="text-right px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {recentDevis.map((devis) => (
+                    <tr
+                      key={devis.id}
+                      className="hover:bg-slate-50 transition-colors group"
+                    >
+                      <td className="px-6 py-4">
+                        <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                          {devis.numero}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="font-medium text-slate-900 text-sm">{devis.titre}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{clientDisplayName(devis.client)}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-slate-500">
+                          {new Date(devis.dateEmission).toLocaleDateString("fr-FR", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <span className="text-sm font-semibold text-slate-900 tabular-nums">
+                          {devis.totalTTC.toLocaleString("fr-FR", {
+                            style: "currency",
+                            currency: "EUR",
+                          })}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <StatusBadge devisId={devis.id} status={devis.status} />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Link
+                            href={`/devis/${devis.id}`}
+                            title="Voir le devis"
+                            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Link>
+                          <Link
+                            href={`/devis/${devis.id}/dupliquer`}
+                            title="Dupliquer"
+                            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-amber-50 text-slate-400 hover:text-amber-600 transition-colors"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Link>
+                          {devis.pdfUrl ? (
+                            <a
+                              href={devis.pdfUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Télécharger le PDF"
+                              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 transition-colors"
+                            >
+                              <FileDown className="w-4 h-4" />
+                            </a>
+                          ) : (
+                            <button
+                              title="PDF non disponible"
+                              disabled
+                              className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-200 cursor-not-allowed"
+                            >
+                              <FileDown className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>
