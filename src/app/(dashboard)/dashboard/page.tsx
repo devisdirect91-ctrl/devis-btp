@@ -35,29 +35,31 @@ async function getStats(userId: string) {
     caLastMonth,
     facturesTotal,
     facturesPayees,
-    montantPaye,
+    facturesTotaux,
     devisAcceptes,
     devisEnAttente,
     devisRefuses,
     lastDevis,
   ] = await Promise.all([
-    prisma.facture.aggregate({
-      where: { userId, status: "PAYEE", datePaiement: { gte: startOfMonth } },
-      _sum: { totalTTC: true },
+    // CA ce mois = somme des acomptes encaissés ce mois
+    prisma.acompte.aggregate({
+      where: { facture: { userId }, datePaiement: { gte: startOfMonth } },
+      _sum: { montant: true },
     }),
-    prisma.facture.aggregate({
+    // CA mois dernier = somme des acomptes encaissés le mois passé
+    prisma.acompte.aggregate({
       where: {
-        userId,
-        status: "PAYEE",
+        facture: { userId },
         datePaiement: { gte: startOfLastMonth, lte: endOfLastMonth },
       },
-      _sum: { totalTTC: true },
+      _sum: { montant: true },
     }),
     prisma.facture.count({ where: { userId, status: { not: "BROUILLON" } } }),
     prisma.facture.count({ where: { userId, status: "PAYEE" } }),
+    // Totaux pour le pourcentage et montant encaissé global
     prisma.facture.aggregate({
-      where: { userId, status: "PAYEE" },
-      _sum: { totalTTC: true },
+      where: { userId, status: { not: "BROUILLON" } },
+      _sum: { totalTTC: true, montantPaye: true },
     }),
     prisma.devis.count({ where: { userId, status: "ACCEPTE" } }),
     prisma.devis.count({ where: { userId, status: { in: ["ENVOYE", "VU"] } } }),
@@ -70,18 +72,24 @@ async function getStats(userId: string) {
     }),
   ]);
 
-  const ca = caThisMonth._sum.totalTTC ?? 0;
-  const caLast = caLastMonth._sum.totalTTC ?? 0;
+  const ca = caThisMonth._sum.montant ?? 0;
+  const caLast = caLastMonth._sum.montant ?? 0;
   const evolution = caLast > 0 ? Math.round(((ca - caLast) / caLast) * 100) : 0;
+
+  const totalDu = facturesTotaux._sum.totalTTC ?? 0;
+  const montantEncaisse = facturesTotaux._sum.montantPaye ?? 0;
+  const montantRestant = Math.max(0, totalDu - montantEncaisse);
+  const pourcentageFacturesPayees =
+    totalDu > 0 ? Math.round((montantEncaisse / totalDu) * 100) : 0;
 
   return {
     chiffreAffaires: ca,
     evolution,
     facturesTotal,
     facturesPayees,
-    pourcentageFacturesPayees:
-      facturesTotal > 0 ? Math.round((facturesPayees / facturesTotal) * 100) : 0,
-    montantPaye: montantPaye._sum.totalTTC ?? 0,
+    pourcentageFacturesPayees,
+    montantEncaisse,
+    montantRestant,
     devisAcceptes,
     devisEnAttente,
     devisRefuses,
@@ -197,18 +205,25 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-5">
               <CircularProgress value={stats.pourcentageFacturesPayees} />
               <div className="flex-1">
-                <p className="font-semibold text-gray-900">Factures payées</p>
-                <p className="text-sm text-gray-500 mt-1">
-                  {stats.facturesPayees} sur {stats.facturesTotal} factures
-                </p>
-                <p className="text-sm text-green-600 font-medium mt-0.5">
+                <p className="font-semibold text-gray-900">Encaissements</p>
+                <p className="text-sm text-green-600 font-medium mt-1">
                   {new Intl.NumberFormat("fr-FR", {
                     style: "currency",
                     currency: "EUR",
                     maximumFractionDigits: 0,
-                  }).format(stats.montantPaye)}{" "}
+                  }).format(stats.montantEncaisse)}{" "}
                   encaissés
                 </p>
+                {stats.montantRestant > 0 && (
+                  <p className="text-sm text-orange-500 mt-0.5">
+                    {new Intl.NumberFormat("fr-FR", {
+                      style: "currency",
+                      currency: "EUR",
+                      maximumFractionDigits: 0,
+                    }).format(stats.montantRestant)}{" "}
+                    en attente
+                  </p>
+                )}
               </div>
             </div>
           </div>
