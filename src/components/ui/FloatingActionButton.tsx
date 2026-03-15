@@ -17,8 +17,8 @@ export function FloatingActionButton() {
         />
       )}
 
-      {/* Container */}
-      <div className="fixed bottom-20 right-4 z-50 flex flex-col items-end gap-3">
+      {/* Container — pointer-events-none pour ne pas bloquer la zone vide */}
+      <div className="fixed bottom-20 right-4 z-50 flex flex-col items-end gap-3 pointer-events-none">
 
         {/* Options */}
         <div
@@ -51,10 +51,10 @@ export function FloatingActionButton() {
           </Link>
         </div>
 
-        {/* Bouton principal */}
+        {/* Bouton principal — pointer-events-auto pour réactiver le clic */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 active:scale-95 ${
+          className={`pointer-events-auto w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 active:scale-95 ${
             isOpen ? "bg-gray-800" : "bg-orange-500"
           }`}
         >

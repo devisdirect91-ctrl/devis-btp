@@ -1,14 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   FileText,
   Receipt,
   Users,
   Package,
-  Plus,
 } from "lucide-react"
 
 const tabs = [
@@ -21,20 +20,9 @@ const tabs = [
 
 export function MobileNav() {
   const pathname = usePathname()
-  const router = useRouter()
 
   return (
     <>
-      {/* FAB — Nouveau devis */}
-      <button
-        onClick={() => router.push("/devis/nouveau")}
-        aria-label="Nouveau devis"
-        className="md:hidden fixed bottom-20 right-4 w-14 h-14 bg-amber-500 active:bg-amber-600 text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-all z-40"
-        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
-      >
-        <Plus className="w-6 h-6" />
-      </button>
-
       {/* Bottom tab bar */}
       <nav
         className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 z-30 flex"
