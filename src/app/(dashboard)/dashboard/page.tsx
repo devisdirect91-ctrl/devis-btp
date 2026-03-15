@@ -122,12 +122,6 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-gray-50">
       {/* ─────────────── VERSION MOBILE ─────────────── */}
       <div className="md:hidden pb-24">
-        {/* Header */}
-        <div className="bg-white px-4 py-4 border-b">
-          <p className="text-gray-500 text-sm">Bonjour,</p>
-          <p className="text-xl font-bold text-gray-900">{firstName} 👋</p>
-        </div>
-
         {/* Actions rapides */}
         <section className="px-4 py-6">
           <div className="flex justify-center gap-8">
