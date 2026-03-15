@@ -13,7 +13,6 @@ export async function GET(req: NextRequest) {
   const items = await prisma.catalogItem.findMany({
     where: {
       userId: session.user.id,
-      actif: true,
       OR: [
         { designation: { contains: q, mode: "insensitive" } },
         { description: { contains: q, mode: "insensitive" } },

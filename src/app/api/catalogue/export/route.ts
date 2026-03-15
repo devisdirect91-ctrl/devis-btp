@@ -21,7 +21,7 @@ export async function GET() {
     orderBy: [{ category: "asc" }, { designation: "asc" }],
   })
 
-  const headers = ["reference", "categorie", "designation", "description", "unite", "prixHT", "tauxTva", "actif"]
+  const headers = ["reference", "categorie", "designation", "description", "unite", "prixHT", "tauxTva"]
   const rows = items.map((item) => [
     escapeCsv(item.reference),
     escapeCsv(item.category),
@@ -30,7 +30,6 @@ export async function GET() {
     escapeCsv(item.unite),
     escapeCsv(item.prixHT),
     escapeCsv(item.tauxTva),
-    escapeCsv(item.actif ? "1" : "0"),
   ])
 
   const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n")

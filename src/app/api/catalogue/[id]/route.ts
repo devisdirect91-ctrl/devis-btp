@@ -35,12 +35,6 @@ export async function PUT(
 
   const body = await req.json()
 
-  // Partial update (e.g. toggle actif only)
-  if (Object.keys(body).length === 1 && "actif" in body) {
-    const item = await prisma.catalogItem.update({ where: { id }, data: { actif: body.actif } })
-    return NextResponse.json({ item })
-  }
-
   const result = catalogueSchema.safeParse(body)
   if (!result.success) {
     return NextResponse.json({ error: "Données invalides", issues: result.error.issues }, { status: 400 })

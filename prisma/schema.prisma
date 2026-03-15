@@ -200,7 +200,6 @@ model CatalogItem {
   unite       Unite           @default(UNITE)
   prixHT      Float
   tauxTva     Float           @default(20)
-  actif       Boolean         @default(true)
   userId      String
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
@@ -210,7 +209,6 @@ model CatalogItem {
 
   @@index([userId])
   @@index([userId, category])
-  @@index([userId, actif])
   @@index([userId, designation])
 }
 

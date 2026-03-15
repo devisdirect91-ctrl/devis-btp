@@ -12,12 +12,9 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const search = searchParams.get("search") || ""
   const category = searchParams.get("category") || ""
-  const actif = searchParams.get("actif")
-
   const where: Prisma.CatalogItemWhereInput = {
     userId: session.user.id,
     ...(category ? { category: category as any } : {}),
-    ...(actif !== null && actif !== "" ? { actif: actif === "true" } : {}),
     ...(search
       ? {
           OR: [

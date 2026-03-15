@@ -62,7 +62,6 @@ export async function POST(req: NextRequest) {
     unite: headers.indexOf("unite"),
     prixHT: headers.findIndex((h) => h === "prixht" || h === "prix_ht"),
     tauxTva: headers.findIndex((h) => h === "tauxtva" || h === "taux_tva"),
-    actif: headers.indexOf("actif"),
   }
 
   if (idx.designation < 0 || idx.category < 0) {
@@ -96,7 +95,6 @@ export async function POST(req: NextRequest) {
       unite,
       prixHT: parseFloat(cols[idx.prixHT] || "0") || 0,
       tauxTva: parseFloat(cols[idx.tauxTva] || "20") || 20,
-      actif: idx.actif >= 0 ? cols[idx.actif] !== "0" : true,
     }
 
     const result = catalogueSchema.safeParse(row)

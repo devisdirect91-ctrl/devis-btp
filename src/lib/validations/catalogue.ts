@@ -16,7 +16,6 @@ export const catalogueSchema = z.object({
   ]),
   prixHT: z.number().min(0, "Le prix ne peut pas être négatif"),
   tauxTva: z.number(),
-  actif: z.boolean(),
 })
 
 export type CatalogueFormData = z.infer<typeof catalogueSchema>

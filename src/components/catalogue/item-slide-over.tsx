@@ -31,7 +31,6 @@ interface ItemSlideOverProps {
     unite: string
     prixHT: number
     tauxTva: number
-    actif: boolean
   } | null
 }
 
@@ -53,7 +52,6 @@ export function ItemSlideOver({ isOpen, onClose, onSaved, item }: ItemSlideOverP
       unite: "UNITE",
       prixHT: 0,
       tauxTva: 20,
-      actif: true,
     },
   })
 
@@ -67,7 +65,6 @@ export function ItemSlideOver({ isOpen, onClose, onSaved, item }: ItemSlideOverP
         unite: item.unite as any,
         prixHT: item.prixHT,
         tauxTva: item.tauxTva,
-        actif: item.actif,
       })
     } else {
       reset({
@@ -78,7 +75,6 @@ export function ItemSlideOver({ isOpen, onClose, onSaved, item }: ItemSlideOverP
         unite: "UNITE",
         prixHT: 0,
         tauxTva: 20,
-        actif: true,
       })
     }
   }, [item, reset, isOpen])
@@ -96,7 +92,6 @@ export function ItemSlideOver({ isOpen, onClose, onSaved, item }: ItemSlideOverP
       ...raw,
       prixHT: Number(raw.prixHT),
       tauxTva: Number(raw.tauxTva),
-      actif: Boolean(raw.actif),
     }
 
     const parsed = catalogueSchema.safeParse(data)
@@ -275,23 +270,6 @@ export function ItemSlideOver({ isOpen, onClose, onSaved, item }: ItemSlideOverP
             )}
           </div>
 
-          {/* Actif */}
-          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-            <input
-              {...register("actif")}
-              type="checkbox"
-              id="actif"
-              className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-            />
-            <div>
-              <label htmlFor="actif" className="text-sm font-medium text-slate-700 cursor-pointer">
-                Prestation active
-              </label>
-              <p className="text-xs text-slate-400">
-                Une prestation inactive ne s&apos;affiche pas dans la liste lors de la création d&apos;un devis
-              </p>
-            </div>
-          </div>
         </form>
 
         {/* Footer */}
