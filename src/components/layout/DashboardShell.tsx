@@ -38,7 +38,7 @@ export function DashboardShell({
   }, [sidebarOpen])
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
+    <div className="flex min-h-screen bg-slate-50">
 
       {/* Overlay mobile */}
       {sidebarOpen && (
@@ -52,7 +52,7 @@ export function DashboardShell({
       {/* Sidebar */}
       <aside
         className={`
-          fixed md:static inset-y-0 left-0 z-30
+          fixed md:sticky md:top-0 md:h-screen md:overflow-y-auto inset-y-0 left-0 z-30
           w-72 md:w-64 bg-slate-900 flex flex-col flex-shrink-0
           transition-transform duration-300 ease-in-out
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
@@ -94,10 +94,10 @@ export function DashboardShell({
       </aside>
 
       {/* Zone principale */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0">
 
         {/* Header */}
-        <header className="h-14 md:h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 flex-shrink-0 gap-3">
+        <header className="sticky top-0 z-40 h-14 md:h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-6 flex-shrink-0 gap-3">
 
           {/* Gauche : hamburger (mobile) */}
           <button
@@ -142,7 +142,7 @@ export function DashboardShell({
         </header>
 
         {/* Contenu — padding bottom sur mobile pour la nav */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16 md:pb-0">
+        <main className="flex-1 pb-16 md:pb-0">
           {children}
         </main>
       </div>
