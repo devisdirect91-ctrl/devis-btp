@@ -230,10 +230,10 @@ export default async function DevisPage({ searchParams }: PageProps) {
                         href={`/devis/${d.id}`}
                         className="block bg-white rounded-xl border p-4 active:bg-gray-50 transition-colors"
                       >
-                        {/* Ligne 1 : client + dot statut */}
-                        <div className="flex justify-between items-start">
+                        {/* Ligne 1 : client + statut */}
+                        <div className="flex justify-between items-start gap-2">
                           <p className="font-semibold text-gray-900 text-sm">{clientName}</p>
-                          <MobileStatusDot status={isExpired ? "EXPIRE" : d.status} />
+                          <MobileStatusBadge status={isExpired ? "EXPIRE" : d.status} />
                         </div>
 
                         {/* Ligne 2 : titre */}
@@ -399,16 +399,18 @@ function MobileSearch({ defaultValue }: { defaultValue: string }) {
   )
 }
 
-function MobileStatusDot({ status }: { status: string }) {
-  const colors: Record<string, string> = {
-    EN_ATTENTE: "bg-yellow-400",
-    SIGNE: "bg-green-500",
-    REFUSE: "bg-red-500",
-    EXPIRE: "bg-orange-400",
+function MobileStatusBadge({ status }: { status: string }) {
+  const config: Record<string, { dot: string; text: string; label: string }> = {
+    EN_ATTENTE: { dot: "bg-yellow-400", text: "text-yellow-600", label: "En attente" },
+    SIGNE:      { dot: "bg-green-500",  text: "text-green-600",  label: "Signé" },
+    REFUSE:     { dot: "bg-red-500",    text: "text-red-600",    label: "Refusé" },
+    EXPIRE:     { dot: "bg-orange-400", text: "text-orange-600", label: "Expiré" },
   }
+  const s = config[status] ?? config.EN_ATTENTE
   return (
-    <div
-      className={`w-2.5 h-2.5 rounded-full flex-shrink-0 mt-0.5 ${colors[status] ?? "bg-gray-300"}`}
-    />
+    <div className="flex items-center gap-1.5 flex-shrink-0">
+      <div className={`w-2 h-2 rounded-full ${s.dot}`} />
+      <span className={`text-xs font-medium ${s.text}`}>{s.label}</span>
+    </div>
   )
 }
