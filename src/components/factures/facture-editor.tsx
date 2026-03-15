@@ -8,6 +8,7 @@ import { LignesEditor } from "@/components/devis/lignes-editor"
 import { CataloguePicker } from "@/components/devis/catalogue-picker"
 import { computeDevisTotaux, newLigne, formatEur } from "@/lib/devis-utils"
 import type { EditorLigne } from "@/lib/devis-utils"
+import { MobileFactureWizard } from "@/components/factures/MobileFactureWizard"
 
 interface FactureEditorProps {
   numero: string
@@ -143,6 +144,18 @@ export function FactureEditor({
 
   return (
     <>
+      {/* ═══════════════ VERSION MOBILE ═══════════════ */}
+      <div className="md:hidden min-h-screen">
+        <MobileFactureWizard
+          numero={numero}
+          tauxTvaDefaut={tauxTvaDefaut}
+          conditionsPaiementDefaut={conditionsPaiementDefaut}
+          mentionsLegalesDefaut={mentionsLegalesDefaut}
+        />
+      </div>
+
+      {/* ═══════════════ VERSION DESKTOP ═══════════════ */}
+      <div className="hidden md:block">
       <CataloguePicker
         isOpen={isCatalogueOpen}
         onClose={() => setIsCatalogueOpen(false)}
@@ -406,6 +419,7 @@ export function FactureEditor({
           </div>
         </div>
       </div>
+      </div>{/* fin hidden md:block */}
     </>
   )
 }
