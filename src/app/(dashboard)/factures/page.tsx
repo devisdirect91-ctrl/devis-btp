@@ -56,10 +56,14 @@ export default async function FacturesPage({ searchParams }: PageProps) {
     ]
   }
   if (status === "EN_RETARD") {
+    // EN_RETARD est calculé (pas stocké) : EN_ATTENTE ou PARTIELLEMENT_PAYEE + échéance dépassée
     where.AND = [
       { status: { in: ["EN_ATTENTE", "PARTIELLEMENT_PAYEE"] } },
       { dateEcheance: { lt: now } },
     ]
+  } else if (status === "ENCAISSE") {
+    // Encaissé = payées + partiellement payées
+    where.status = { in: ["PAYEE", "PARTIELLEMENT_PAYEE"] } as Prisma.EnumFactureStatusFilter
   } else if (status) {
     where.status = status as Prisma.EnumFactureStatusFilter
   }
@@ -166,12 +170,12 @@ export default async function FacturesPage({ searchParams }: PageProps) {
           </div>
         </div>
 
-        {/* Filtres statut — chips cliquables */}
-        <div className="px-4 pt-4 pb-2">
+        {/* Stats cliquables */}
+        <div className="px-4 pt-4 pb-3">
           <div className="grid grid-cols-3 gap-2">
             <MobileFilterChip
-              href="/factures"
-              active={!status}
+              href="/factures?status=ENCAISSE"
+              active={status === "ENCAISSE"}
               label="Encaissé"
               subLabel={fmtMontant(totalEncaisse)}
               color="green"
@@ -191,6 +195,30 @@ export default async function FacturesPage({ searchParams }: PageProps) {
               color="red"
               alert={enRetard.length > 0 && !status}
             />
+          </div>
+        </div>
+
+        {/* Chips filtre texte */}
+        <div className="px-4 pb-3">
+          <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+            {[
+              { href: "/factures", label: "Toutes", active: !status },
+              { href: "/factures?status=ENCAISSE",   label: "Encaissées", active: status === "ENCAISSE",   activeClass: "bg-green-500 text-white" },
+              { href: "/factures?status=EN_ATTENTE", label: "En attente", active: status === "EN_ATTENTE", activeClass: "bg-yellow-500 text-white" },
+              { href: "/factures?status=EN_RETARD",  label: "En retard",  active: status === "EN_RETARD",  activeClass: "bg-red-500 text-white" },
+            ].map((chip) => (
+              <Link
+                key={chip.href}
+                href={chip.href}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+                  chip.active
+                    ? (chip as any).activeClass ?? "bg-gray-900 text-white"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {chip.label}
+              </Link>
+            ))}
           </div>
         </div>
 
