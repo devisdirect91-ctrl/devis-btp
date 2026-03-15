@@ -107,6 +107,7 @@ model Client {
   factures   Facture[]
 
   @@index([userId])
+  @@index([nom])
   @@index([userId, type])
   @@index([email])
 }
@@ -162,6 +163,8 @@ model Devis {
   @@unique([userId, numeroAnnee, numeroSequence])
   @@index([userId])
   @@index([clientId])
+  @@index([status])
+  @@index([createdAt])
   @@index([userId, status])
   @@index([userId, numeroAnnee])
 }
@@ -261,6 +264,9 @@ model Facture {
   @@unique([userId, numeroAnnee, numeroSequence])
   @@index([userId])
   @@index([clientId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([dateEcheance])
   @@index([userId, status])
   @@index([userId, numeroAnnee])
   @@index([devisId])

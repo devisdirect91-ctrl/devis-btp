@@ -118,7 +118,16 @@ export default async function DashboardPage() {
       }),
       prisma.devis.findMany({
         where: { userId },
-        include: { client: true },
+        select: {
+          id: true,
+          numero: true,
+          titre: true,
+          dateEmission: true,
+          totalTTC: true,
+          status: true,
+          pdfUrl: true,
+          client: { select: { nom: true, prenom: true, societe: true, type: true } },
+        },
         orderBy: { createdAt: "desc" },
         take: 8,
       }),
