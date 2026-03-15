@@ -332,6 +332,7 @@ enum ClientType {
 enum DevisStatus {
   EN_ATTENTE
   SIGNE
+  SIGNE_ELECTRONIQUEMENT
   REFUSE
 }
 

@@ -73,20 +73,23 @@ export function StatusBadge({ devisId, status }: { devisId: string; status: stri
       )
     : null
 
+  const isLocked = status === "SIGNE_ELECTRONIQUEMENT"
+
   return (
     <>
       <button
         ref={btnRef}
-        onClick={handleOpen}
-        disabled={loading}
+        onClick={isLocked ? undefined : handleOpen}
+        disabled={loading || isLocked}
+        title={isLocked ? "Signé électroniquement — statut non modifiable" : undefined}
         className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-opacity ${
           STATUS_STYLES[status] ?? STATUS_STYLES.EN_ATTENTE
-        } ${loading ? "opacity-50" : "hover:opacity-80 cursor-pointer"}`}
+        } ${loading ? "opacity-50" : isLocked ? "cursor-default" : "hover:opacity-80 cursor-pointer"}`}
       >
         {STATUS_LABELS[status] ?? status}
-        <span className="text-[10px] opacity-60">▾</span>
+        {!isLocked && <span className="text-[10px] opacity-60">▾</span>}
       </button>
-      {dropdown}
+      {!isLocked && dropdown}
     </>
   )
 }

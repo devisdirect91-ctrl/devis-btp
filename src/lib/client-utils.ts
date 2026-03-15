@@ -17,6 +17,7 @@ export function clientInitials(displayName: string): string {
 export const STATUS_LABELS: Record<string, string> = {
   EN_ATTENTE: "En attente",
   SIGNE: "Signé",
+  SIGNE_ELECTRONIQUEMENT: "Signé électroniquement",
   REFUSE: "Refusé",
   EXPIRE: "Expiré", // display-only (computed from dateValidite)
 }
@@ -24,6 +25,7 @@ export const STATUS_LABELS: Record<string, string> = {
 export const STATUS_STYLES: Record<string, string> = {
   EN_ATTENTE: "bg-yellow-50 text-yellow-700 border border-yellow-200",
   SIGNE: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  SIGNE_ELECTRONIQUEMENT: "bg-emerald-50 text-emerald-700 border border-emerald-200",
   REFUSE: "bg-red-50 text-red-700 border border-red-200",
   EXPIRE: "bg-orange-50 text-orange-700 border border-orange-200",
 }

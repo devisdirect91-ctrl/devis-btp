@@ -62,7 +62,11 @@ export default async function DevisPage({ searchParams }: PageProps) {
       { client: { societe: { contains: search, mode: "insensitive" } } },
     ]
   }
-  if (status) where.status = status as Prisma.EnumDevisStatusFilter
+  if (status === "SIGNE") {
+    where.status = { in: ["SIGNE", "SIGNE_ELECTRONIQUEMENT"] } as unknown as Prisma.EnumDevisStatusFilter
+  } else if (status) {
+    where.status = status as Prisma.EnumDevisStatusFilter
+  }
   if (periodDates.gte) where.dateEmission = periodDates
   if (montantMin !== undefined) where.totalTTC = { gte: montantMin }
   if (montantMax !== undefined) {
@@ -92,7 +96,9 @@ export default async function DevisPage({ searchParams }: PageProps) {
     allStats.map((s) => [s.status, { count: s._count.id, total: s._sum.totalTTC ?? 0 }])
   )
   const totalCount = allStats.reduce((s, r) => s + r._count.id, 0)
-  const caSigne = byStatus.SIGNE?.total ?? 0
+  // Regroupe SIGNE + SIGNE_ELECTRONIQUEMENT pour les stats et filtres
+  const signeCount = (byStatus.SIGNE?.count ?? 0) + (byStatus.SIGNE_ELECTRONIQUEMENT?.count ?? 0)
+  const caSigne = (byStatus.SIGNE?.total ?? 0) + (byStatus.SIGNE_ELECTRONIQUEMENT?.total ?? 0)
 
   // Mobile: group by month
   function groupByMonth(items: typeof devisList) {
@@ -155,7 +161,7 @@ export default async function DevisPage({ searchParams }: PageProps) {
             <FilterChip
               href="/devis?status=SIGNE"
               active={status === "SIGNE"}
-              value={byStatus.SIGNE?.count ?? 0}
+              value={signeCount}
               label="Signés"
               color="green"
             />
@@ -292,7 +298,7 @@ export default async function DevisPage({ searchParams }: PageProps) {
               },
               {
                 label: "Signés",
-                value: byStatus.SIGNE?.count ?? 0,
+                value: signeCount,
                 sub: caSigne > 0 ? fmt(caSigne) : undefined,
                 accent: "text-emerald-600",
               },
@@ -393,10 +399,11 @@ function MobileSearch({ defaultValue }: { defaultValue: string }) {
 
 function MobileStatusBadge({ status }: { status: string }) {
   const config: Record<string, { dot: string; text: string; label: string }> = {
-    EN_ATTENTE: { dot: "bg-yellow-400", text: "text-yellow-600", label: "En attente" },
-    SIGNE:      { dot: "bg-green-500",  text: "text-green-600",  label: "Signé" },
-    REFUSE:     { dot: "bg-red-500",    text: "text-red-600",    label: "Refusé" },
-    EXPIRE:     { dot: "bg-orange-400", text: "text-orange-600", label: "Expiré" },
+    EN_ATTENTE:             { dot: "bg-yellow-400", text: "text-yellow-600", label: "En attente" },
+    SIGNE:                  { dot: "bg-green-500",  text: "text-green-600",  label: "Signé" },
+    SIGNE_ELECTRONIQUEMENT: { dot: "bg-green-500",  text: "text-green-600",  label: "Signé ⚡" },
+    REFUSE:                 { dot: "bg-red-500",    text: "text-red-600",    label: "Refusé" },
+    EXPIRE:                 { dot: "bg-orange-400", text: "text-orange-600", label: "Expiré" },
   }
   const s = config[status] ?? config.EN_ATTENTE
   return (

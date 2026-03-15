@@ -101,7 +101,12 @@ export default async function FacturesPage({ searchParams }: PageProps) {
     .filter((f) => new Date(f.dateEmission) >= startOfMonth)
     .reduce((s, f) => s + f.totalTTC, 0)
 
-  const montantEnAttente = enAttente.reduce((s, f) => s + (f.totalTTC - f.montantPaye), 0)
+  const montantEnAttente = allFactures
+    .filter((f) => {
+      const st = computeFactureStatus(f.status, new Date(f.dateEcheance))
+      return st === "EN_ATTENTE" || st === "PARTIELLEMENT_PAYEE"
+    })
+    .reduce((s, f) => s + (f.totalTTC - f.montantPaye), 0)
   const montantEnRetard = enRetard.reduce((s, f) => s + (f.totalTTC - f.montantPaye), 0)
 
   // Mobile: group by month
