@@ -109,11 +109,10 @@ export async function GET(
   // Si le devis est signé mais que l'upload Supabase avait échoué → génère à la volée
   const signatureSrc = devis.signatureClientUrl ?? devis.signatureClient ?? null
   if (
-    devis.status === "SIGNE" &&
+    (devis.status === "SIGNE" || devis.status === "SIGNE_ELECTRONIQUEMENT") &&
     signatureSrc &&
     devis.signatureClientNom &&
-    devis.dateSignature &&
-    devis.signatureToken
+    devis.dateSignature
   ) {
     buffer = await generateSignedPdfBuffer(data, {
       signatureSrc,
