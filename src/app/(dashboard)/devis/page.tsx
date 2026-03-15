@@ -7,6 +7,7 @@ import Link from "next/link"
 import { FilePlus, Plus, FileText, CheckCircle, XCircle, Clock, Search } from "lucide-react"
 import { DevisFilters } from "@/components/devis/devis-filters"
 import { DevisTable } from "@/components/devis/devis-table"
+import { DevisStatusSelector } from "@/components/ui/DevisStatusSelector"
 import { clientDisplayName } from "@/lib/client-utils"
 import type { Prisma } from "@prisma/client"
 
@@ -217,10 +218,6 @@ export default async function DevisPage({ searchParams }: PageProps) {
 
                 <div className="space-y-2">
                   {group.items.map((d) => {
-                    const isExpired =
-                      d.status === "EN_ATTENTE" &&
-                      d.dateValidite &&
-                      new Date(d.dateValidite) < new Date()
                     const clientName = clientDisplayName(d.client)
                     return (
                       <Link
@@ -230,8 +227,11 @@ export default async function DevisPage({ searchParams }: PageProps) {
                       >
                         {/* Ligne 1 : client + statut */}
                         <div className="flex justify-between items-start gap-2">
-                          <p className="font-semibold text-gray-900 text-sm">{clientName}</p>
-                          <MobileStatusBadge status={isExpired ? "EXPIRE" : d.status} />
+                          <p className="font-semibold text-gray-900 text-sm leading-tight">{clientName}</p>
+                          <DevisStatusSelector
+                            devisId={d.id}
+                            currentStatus={d.status as "EN_ATTENTE" | "SIGNE" | "SIGNE_ELECTRONIQUEMENT" | "REFUSE"}
+                          />
                         </div>
 
                         {/* Ligne 2 : titre */}
@@ -397,19 +397,3 @@ function MobileSearch({ defaultValue }: { defaultValue: string }) {
   )
 }
 
-function MobileStatusBadge({ status }: { status: string }) {
-  const config: Record<string, { dot: string; text: string; label: string }> = {
-    EN_ATTENTE:             { dot: "bg-yellow-400", text: "text-yellow-600", label: "En attente" },
-    SIGNE:                  { dot: "bg-green-500",  text: "text-green-600",  label: "Signé" },
-    SIGNE_ELECTRONIQUEMENT: { dot: "bg-green-500",  text: "text-green-600",  label: "Signé ⚡" },
-    REFUSE:                 { dot: "bg-red-500",    text: "text-red-600",    label: "Refusé" },
-    EXPIRE:                 { dot: "bg-orange-400", text: "text-orange-600", label: "Expiré" },
-  }
-  const s = config[status] ?? config.EN_ATTENTE
-  return (
-    <div className="flex items-center gap-1.5 flex-shrink-0">
-      <div className={`w-2 h-2 rounded-full ${s.dot}`} />
-      <span className={`text-xs font-medium ${s.text}`}>{s.label}</span>
-    </div>
-  )
-}
