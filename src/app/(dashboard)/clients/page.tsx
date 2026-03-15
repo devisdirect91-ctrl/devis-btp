@@ -102,7 +102,7 @@ export default async function ClientsPage({ searchParams }: PageProps) {
             </div>
             <Link
               href="/clients/new"
-              className="w-11 h-11 bg-blue-500 rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform"
+              className="w-11 h-11 bg-green-500 rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform"
             >
               <Plus className="w-5 h-5 text-white" />
             </Link>
