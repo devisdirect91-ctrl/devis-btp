@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import type { Prisma } from "@prisma/client"
 import Link from "next/link"
-import { UserPlus, Users, Eye, Pencil, Plus, Search, UserCheck, Phone, FileText } from "lucide-react"
+import { UserPlus, Users, Eye, Pencil, Plus, Search, Phone, FileText } from "lucide-react"
 import { ClientFilters } from "@/components/clients/client-filters"
 import { DeleteClientButton } from "@/components/clients/delete-client-button"
 import { clientDisplayName, clientInitials } from "@/lib/client-utils"
@@ -12,21 +12,17 @@ import { clientDisplayName, clientInitials } from "@/lib/client-utils"
 export const metadata = { title: "Mes clients — DevisBTP" }
 
 interface PageProps {
-  searchParams: Promise<{ search?: string; type?: string; page?: string; filter?: string }>
+  searchParams: Promise<{ search?: string; type?: string; page?: string }>
 }
 
 export default async function ClientsPage({ searchParams }: PageProps) {
   const session = await getServerSession(authOptions)
   const userId = session?.user?.id ?? ""
 
-  const { search = "", type = "", page: pageStr = "1", filter = "" } = await searchParams
+  const { search = "", type = "", page: pageStr = "1" } = await searchParams
   const page = Math.max(1, parseInt(pageStr))
   const limit = 20
   const skip = (page - 1) * limit
-
-  const now = new Date()
-  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
   // ── Where clause desktop (type + search) ─────────────────────────────────
   const desktopWhere: Prisma.ClientWhereInput = {
@@ -45,40 +41,24 @@ export default async function ClientsPage({ searchParams }: PageProps) {
       : {}),
   }
 
-  // ── Where clause mobile (filter + search) ────────────────────────────────
-  const mobileWhere: Prisma.ClientWhereInput = { userId }
-
-  if (filter === "ACTIFS") {
-    mobileWhere.OR = [{ devis: { some: {} } }, { factures: { some: {} } }]
-  } else if (filter === "NOUVEAUX") {
-    mobileWhere.createdAt = { gte: thirtyDaysAgo }
+  // ── Where clause mobile (search only) ────────────────────────────────────
+  const mobileWhere: Prisma.ClientWhereInput = {
+    userId,
+    ...(search
+      ? {
+          OR: [
+            { nom: { contains: search, mode: "insensitive" } },
+            { prenom: { contains: search, mode: "insensitive" } },
+            { societe: { contains: search, mode: "insensitive" } },
+            { email: { contains: search, mode: "insensitive" } },
+            { telephone: { contains: search, mode: "insensitive" } },
+            { ville: { contains: search, mode: "insensitive" } },
+          ],
+        }
+      : {}),
   }
 
-  if (search) {
-    const searchCondition: Prisma.ClientWhereInput = {
-      OR: [
-        { nom: { contains: search, mode: "insensitive" } },
-        { prenom: { contains: search, mode: "insensitive" } },
-        { societe: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
-        { telephone: { contains: search, mode: "insensitive" } },
-        { ville: { contains: search, mode: "insensitive" } },
-      ],
-    }
-    mobileWhere.AND = [searchCondition]
-  }
-
-  const [
-    // Desktop data
-    clientsDesktop,
-    totalDesktop,
-    // Mobile data
-    clientsMobile,
-    statsTotal,
-    statsActifs,
-    statsNouveaux,
-    caTotal,
-  ] = await Promise.all([
+  const [clientsDesktop, totalDesktop, clientsMobile, statsTotal, caTotal] = await Promise.all([
     prisma.client.findMany({
       where: desktopWhere,
       include: { _count: { select: { devis: true } } },
@@ -93,10 +73,6 @@ export default async function ClientsPage({ searchParams }: PageProps) {
       orderBy: { createdAt: "desc" },
     }),
     prisma.client.count({ where: { userId } }),
-    prisma.client.count({
-      where: { userId, OR: [{ devis: { some: {} } }, { factures: { some: {} } }] },
-    }),
-    prisma.client.count({ where: { userId, createdAt: { gte: thirtyDaysAgo } } }),
     prisma.facture.aggregate({
       where: { userId, status: "PAYEE" },
       _sum: { totalTTC: true },
@@ -133,37 +109,9 @@ export default async function ClientsPage({ searchParams }: PageProps) {
           </div>
         </div>
 
-        {/* Stats chips */}
-        <div className="px-4 pt-4 pb-2">
-          <div className="grid grid-cols-3 gap-2">
-            <MobileStatChip
-              href="/clients"
-              active={!filter}
-              value={statsTotal}
-              label="Tous"
-              color="gray"
-            />
-            <MobileStatChip
-              href="/clients?filter=ACTIFS"
-              active={filter === "ACTIFS"}
-              value={statsActifs}
-              label="Actifs"
-              color="green"
-            />
-            <MobileStatChip
-              href="/clients?filter=NOUVEAUX"
-              active={filter === "NOUVEAUX"}
-              value={statsNouveaux}
-              label="Nouveaux"
-              color="blue"
-            />
-          </div>
-        </div>
-
         {/* Recherche */}
-        <div className="px-4 pb-3">
+        <div className="px-4 pt-4 pb-3">
           <form method="GET" action="/clients">
-            {filter && <input type="hidden" name="filter" value={filter} />}
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               <input
@@ -180,10 +128,10 @@ export default async function ClientsPage({ searchParams }: PageProps) {
         {/* Liste */}
         <div className="px-4 space-y-3">
           {clientsMobile.length === 0 ? (
-            <MobileEmpty filter={filter} search={search} />
+            <MobileEmpty search={search} />
           ) : (
             clientsMobile.map((client) => (
-              <MobileClientCard key={client.id} client={client} sevenDaysAgo={sevenDaysAgo} />
+              <MobileClientCard key={client.id} client={client} />
             ))
           )}
         </div>
@@ -362,45 +310,8 @@ export default async function ClientsPage({ searchParams }: PageProps) {
 
 // ─── Composants mobiles ───────────────────────────────────────────────────────
 
-function MobileStatChip({
-  href,
-  active,
-  value,
-  label,
-  color,
-}: {
-  href: string
-  active: boolean
-  value: number
-  label: string
-  color: "gray" | "green" | "blue"
-}) {
-  const activeStyles = {
-    gray: "bg-gray-900 text-white",
-    green: "bg-green-500 text-white",
-    blue: "bg-blue-500 text-white",
-  }
-  const inactiveStyles = {
-    gray: "bg-white border text-gray-700",
-    green: "bg-white border text-green-600",
-    blue: "bg-white border text-blue-600",
-  }
-  return (
-    <Link
-      href={href}
-      className={`rounded-xl p-2.5 text-center transition-all active:scale-95 ${
-        active ? activeStyles[color] : inactiveStyles[color]
-      }`}
-    >
-      <p className="text-lg font-bold leading-tight">{value}</p>
-      <p className="text-[10px] mt-0.5 opacity-80 leading-tight">{label}</p>
-    </Link>
-  )
-}
-
 function MobileClientCard({
   client,
-  sevenDaysAgo,
 }: {
   client: {
     id: string
@@ -412,33 +323,23 @@ function MobileClientCard({
     telephone: string | null
     portable: string | null
     ville: string | null
-    createdAt: Date
     _count: { devis: number; factures: number }
   }
-  sevenDaysAgo: Date
 }) {
   const displayName = clientDisplayName(client)
   const phone = client.telephone || client.portable
-  const isNew = new Date(client.createdAt) >= sevenDaysAgo
 
   return (
     <div className="bg-white rounded-xl border overflow-hidden">
       <Link href={`/clients/${client.id}`} className="block p-4 active:bg-gray-50 transition-colors">
-        {/* Ligne 1 : nom + badges */}
+        {/* Ligne 1 : nom + badge PRO */}
         <div className="flex justify-between items-start gap-2">
           <p className="font-semibold text-gray-900 text-sm leading-tight">{displayName}</p>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {isNew && (
-              <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full font-medium">
-                Nouveau
-              </span>
-            )}
-            {client.type === "PROFESSIONNEL" && (
-              <span className="text-[10px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded-full font-medium">
-                PRO
-              </span>
-            )}
-          </div>
+          {client.type === "PROFESSIONNEL" && (
+            <span className="text-[10px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded-full font-medium flex-shrink-0">
+              PRO
+            </span>
+          )}
         </div>
 
         {/* Ligne 2 : contact + ville */}
@@ -456,7 +357,7 @@ function MobileClientCard({
             {client._count.devis} devis
           </span>
           <span className="flex items-center gap-1">
-            <UserCheck className="w-3.5 h-3.5" />
+            <FileText className="w-3.5 h-3.5" />
             {client._count.factures} facture{client._count.factures !== 1 ? "s" : ""}
           </span>
         </div>
@@ -485,33 +386,26 @@ function MobileClientCard({
   )
 }
 
-function MobileEmpty({ filter, search }: { filter: string; search: string }) {
-  if (search) {
-    return (
-      <div className="text-center py-14">
-        <Search className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-        <p className="text-gray-500 text-sm">Aucun résultat pour &quot;{search}&quot;</p>
-      </div>
-    )
-  }
-
-  const messages: Record<string, string> = {
-    "": "Vous n'avez pas encore de client",
-    ACTIFS: "Aucun client avec des devis ou factures",
-    NOUVEAUX: "Aucun nouveau client ce mois-ci",
-  }
-
+function MobileEmpty({ search }: { search: string }) {
   return (
     <div className="text-center py-14">
-      <Users className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-      <p className="text-gray-500 text-sm">{messages[filter] ?? messages[""]}</p>
-      <Link
-        href="/clients/new"
-        className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-blue-500 text-white rounded-xl text-sm font-semibold"
-      >
-        <Plus className="w-4 h-4" />
-        Ajouter un client
-      </Link>
+      {search ? (
+        <Search className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+      ) : (
+        <Users className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+      )}
+      <p className="text-gray-500 text-sm">
+        {search ? `Aucun résultat pour "${search}"` : "Vous n'avez pas encore de client"}
+      </p>
+      {!search && (
+        <Link
+          href="/clients/new"
+          className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-blue-500 text-white rounded-xl text-sm font-semibold"
+        >
+          <Plus className="w-4 h-4" />
+          Ajouter un client
+        </Link>
+      )}
     </div>
   )
 }
