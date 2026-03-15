@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { HardHat, Bell, ChevronDown, Menu, X } from "lucide-react"
+import { HardHat, Bell, ChevronDown, Menu, X, Settings } from "lucide-react"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { MobileNav } from "@/components/layout/MobileNav"
 import { FloatingActionButton } from "@/components/ui/FloatingActionButton"
@@ -119,15 +119,23 @@ export function DashboardShell({
           {/* Espace desktop */}
           <div className="hidden md:block flex-1" />
 
-          {/* Droite : actions */}
-          <div className="flex items-center gap-2">
+          {/* Droite mobile : bouton réglages */}
+          <Link
+            href="/parametres"
+            className="md:hidden w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 active:bg-slate-200 transition-colors text-slate-600 flex-shrink-0"
+            aria-label="Réglages"
+          >
+            <Settings className="w-5 h-5" />
+          </Link>
+
+          {/* Droite desktop : notif + profil */}
+          <div className="hidden md:flex items-center gap-2">
             <button
               className="relative w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors text-slate-500"
               title="Notifications"
             >
               <Bell className="w-4 h-4" />
             </button>
-
             <Link
               href="/parametres"
               className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
@@ -135,8 +143,8 @@ export function DashboardShell({
               <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 text-xs font-bold flex-shrink-0">
                 {initials}
               </div>
-              <span className="hidden md:block text-sm font-medium text-slate-700">{firstName}</span>
-              <ChevronDown className="hidden md:block w-3.5 h-3.5 text-slate-400" />
+              <span className="text-sm font-medium text-slate-700">{firstName}</span>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
             </Link>
           </div>
         </header>
