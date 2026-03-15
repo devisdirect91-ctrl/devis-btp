@@ -15,19 +15,15 @@ export function clientInitials(displayName: string): string {
 }
 
 export const STATUS_LABELS: Record<string, string> = {
-  BROUILLON: "Brouillon",
-  ENVOYE: "Envoyé",
-  VU: "Vu",
-  ACCEPTE: "Accepté",
+  EN_ATTENTE: "En attente",
+  SIGNE: "Signé",
   REFUSE: "Refusé",
-  EXPIRE: "Expiré",
+  EXPIRE: "Expiré", // display-only (computed from dateValidite)
 }
 
 export const STATUS_STYLES: Record<string, string> = {
-  BROUILLON: "bg-slate-100 text-slate-600 border border-slate-200",
-  ENVOYE: "bg-blue-50 text-blue-700 border border-blue-200",
-  VU: "bg-purple-50 text-purple-700 border border-purple-200",
-  ACCEPTE: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  EN_ATTENTE: "bg-yellow-50 text-yellow-700 border border-yellow-200",
+  SIGNE: "bg-emerald-50 text-emerald-700 border border-emerald-200",
   REFUSE: "bg-red-50 text-red-700 border border-red-200",
   EXPIRE: "bg-orange-50 text-orange-700 border border-orange-200",
 }

@@ -12,8 +12,8 @@ interface SendEmailButtonProps {
 export function SendEmailButton({ devisId, status }: SendEmailButtonProps) {
   const [open, setOpen] = useState(false)
 
-  // Disponible pour BROUILLON et ENVOYE (ré-envoi possible)
-  if (status !== "BROUILLON" && status !== "ENVOYE") return null
+  // Disponible tant que le devis est en attente
+  if (status !== "EN_ATTENTE") return null
 
   return (
     <>

@@ -20,7 +20,7 @@ export async function GET(
 
   if (!devis) return NextResponse.json({ error: "Lien invalide" }, { status: 404 })
 
-  if (devis.status !== "ACCEPTE") {
+  if (devis.status !== "SIGNE") {
     return NextResponse.json({ error: "PDF non disponible" }, { status: 403 })
   }
 

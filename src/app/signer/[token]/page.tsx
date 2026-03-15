@@ -48,21 +48,14 @@ export default async function SignerPage({ params }: Props) {
     )
   }
 
-  // Log OUVERT and update status to VU if still ENVOYE
-  if (devis.status !== "ACCEPTE" && devis.status !== "REFUSE") {
+  // Log OUVERT si pas encore traité
+  if (devis.status !== "SIGNE" && devis.status !== "REFUSE") {
     const h = await headers()
     const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? h.get("x-real-ip") ?? null
     const userAgent = h.get("user-agent") ?? null
 
     // Run in background (don't block render)
     void logOpen(devis.id, ip, userAgent)
-
-    if (devis.status === "ENVOYE") {
-      await prisma.devis.update({
-        where: { id: devis.id },
-        data: { status: "VU" },
-      })
-    }
   }
 
   return (

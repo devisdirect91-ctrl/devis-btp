@@ -16,7 +16,7 @@ export async function generateSignedPdfBuffer(
 ): Promise<Buffer> {
   const dataWithSignature: DevisPdfData = {
     ...pdfData,
-    devis: { ...pdfData.devis, status: "ACCEPTE" },
+    devis: { ...pdfData.devis, status: "SIGNE" },
     signature: {
       imageSrc: opts.signatureSrc,
       signatairenom: opts.signatairenom,

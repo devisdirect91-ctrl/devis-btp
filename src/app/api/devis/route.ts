@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
       numeroAnnee: parsed.year,
       numeroSequence: parsed.seq,
       titre: data.titre,
-      status: "BROUILLON",
+      status: "EN_ATTENTE",
       signatureToken: crypto.randomUUID(),
       validiteJours: data.validiteJours,
       dateEmission,

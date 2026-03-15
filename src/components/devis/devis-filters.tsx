@@ -6,11 +6,9 @@ import { Search, X, SlidersHorizontal } from "lucide-react"
 
 const STATUSES = [
   { value: "", label: "Tous les statuts" },
-  { value: "BROUILLON", label: "Brouillon" },
-  { value: "ENVOYE", label: "Envoyé" },
-  { value: "ACCEPTE", label: "Accepté" },
+  { value: "EN_ATTENTE", label: "En attente" },
+  { value: "SIGNE", label: "Signé" },
   { value: "REFUSE", label: "Refusé" },
-  { value: "EXPIRE", label: "Expiré" },
 ]
 
 const PERIODS = [

@@ -115,7 +115,7 @@ model Devis {
   id                    String         @id @default(cuid())
   numero                String
   titre                 String
-  status                DevisStatus    @default(BROUILLON)
+  status                DevisStatus    @default(EN_ATTENTE)
   validiteJours         Int            @default(30)
   dateEmission          DateTime       @default(now())
   dateValidite          DateTime?
@@ -326,12 +326,9 @@ enum ClientType {
 }
 
 enum DevisStatus {
-  BROUILLON
-  ENVOYE
-  ACCEPTE
+  EN_ATTENTE
+  SIGNE
   REFUSE
-  EXPIRE
-  VU
 }
 
 enum FactureStatus {

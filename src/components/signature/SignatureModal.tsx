@@ -106,7 +106,7 @@ export function SignatureModal({ token, devis, lignes, artisanNom, primaryColor 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "ACCEPTE",
+          action: "SIGNE",
           nom: nom.trim(),
           signatureBase64: signatureB64,
           acceptedTerms: true,

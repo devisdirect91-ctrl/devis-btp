@@ -105,14 +105,10 @@ export async function GET(
   const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? h.get("x-real-ip") ?? null
   const userAgent = h.get("user-agent") ?? null
 
-  if (devis.status !== "ACCEPTE" && devis.status !== "REFUSE") {
+  if (devis.status !== "SIGNE" && devis.status !== "REFUSE") {
     await prisma.signatureLog.create({
       data: { devisId: devis.id, action: "OUVERT", ipAddress: ip, userAgent },
     })
-
-    if (devis.status === "ENVOYE") {
-      await prisma.devis.update({ where: { id: devis.id }, data: { status: "VU" } })
-    }
   }
 
   const clientName = devis.client.type === "PROFESSIONNEL" && devis.client.societe
@@ -173,7 +169,7 @@ export async function POST(
     return NextResponse.json({ error: "Ce lien a expiré" }, { status: 410 })
   }
 
-  if (devis.status === "ACCEPTE" || devis.status === "REFUSE") {
+  if (devis.status === "SIGNE" || devis.status === "REFUSE") {
     return NextResponse.json({ error: "Ce devis a déjà été traité" }, { status: 409 })
   }
 
@@ -184,13 +180,13 @@ export async function POST(
   const body = await req.json()
   const { action, nom, signatureBase64, acceptedTerms, motif } = body
 
-  if (action !== "ACCEPTE" && action !== "REFUSE") {
+  if (action !== "SIGNE" && action !== "REFUSE") {
     return NextResponse.json({ error: "Action invalide" }, { status: 400 })
   }
-  if (action === "ACCEPTE" && !signatureBase64) {
+  if (action === "SIGNE" && !signatureBase64) {
     return NextResponse.json({ error: "Signature requise" }, { status: 400 })
   }
-  if (action === "ACCEPTE" && !acceptedTerms) {
+  if (action === "SIGNE" && !acceptedTerms) {
     return NextResponse.json({ error: "Vous devez accepter les conditions" }, { status: 400 })
   }
 
@@ -198,7 +194,7 @@ export async function POST(
 
   // Upload de la signature vers Supabase Storage (hors DB)
   let signatureClientUrl: string | null = null
-  if (action === "ACCEPTE" && signatureBase64) {
+  if (action === "SIGNE" && signatureBase64) {
     try {
       signatureClientUrl = await uploadSignatureBase64(devis.userId, devis.id, signatureBase64)
     } catch (err) {
@@ -225,7 +221,7 @@ export async function POST(
   await prisma.signatureLog.create({
     data: {
       devisId: devis.id,
-      action: action === "ACCEPTE" ? "SIGNE" : "REFUSE",
+      action: action,
       ipAddress: ip,
       userAgent,
       metadata: { nom, acceptedTerms, ...(action === "REFUSE" && motif ? { motif } : {}) },
@@ -243,7 +239,7 @@ export async function POST(
     try {
       let pdfBuffer: Buffer | null = null
 
-      if (action === "ACCEPTE" && signatureBase64) {
+      if (action === "SIGNE" && signatureBase64) {
         const pdfData = buildPdfData(devis)
 
         pdfBuffer = await generateSignedPdfBuffer(pdfData, {
@@ -263,7 +259,7 @@ export async function POST(
       }
 
       // Email au client (confirmation + PDF en pièce jointe)
-      if (action === "ACCEPTE" && devis.client.email) {
+      if (action === "SIGNE" && devis.client.email) {
         await sendEmail({
           to: devis.client.email,
           subject: `Confirmation de signature — Devis ${devis.numero}`,
@@ -288,7 +284,7 @@ export async function POST(
       if (devis.user.email) {
         await sendEmail({
           to: devis.user.email,
-          subject: action === "ACCEPTE"
+          subject: action === "SIGNE"
             ? `✅ Devis ${devis.numero} accepté par ${clientName}`
             : `❌ Devis ${devis.numero} refusé par ${clientName}`,
           html: emailSignatureNotificationArtisan({

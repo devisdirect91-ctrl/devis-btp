@@ -79,7 +79,7 @@ interface Props {
 
 export function SignaturePage({ token, devis, client, lignes, user }: Props) {
   const primary = user.couleurPrimaire ?? "#1d4ed8"
-  const alreadyDone = devis.status === "ACCEPTE" || devis.status === "REFUSE"
+  const alreadyDone = devis.status === "SIGNE" || devis.status === "REFUSE"
 
   const [pageState, setPageState] = useState<"view" | "refuse-confirm" | "done">(
     alreadyDone ? "done" : "view"
@@ -87,8 +87,8 @@ export function SignaturePage({ token, devis, client, lignes, user }: Props) {
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [result, setResult] = useState<"ACCEPTE" | "REFUSE" | null>(
-    devis.status === "ACCEPTE" ? "ACCEPTE" : devis.status === "REFUSE" ? "REFUSE" : null
+  const [result, setResult] = useState<"SIGNE" | "REFUSE" | null>(
+    devis.status === "SIGNE" ? "SIGNE" : devis.status === "REFUSE" ? "REFUSE" : null
   )
   const [signataireName, setSignataireName] = useState(devis.signatureClientNom ?? "")
   const [signedAt, setSignedAt] = useState<string | null>(devis.dateSignature ?? null)
@@ -110,7 +110,7 @@ export function SignaturePage({ token, devis, client, lignes, user }: Props) {
   const handleModalSuccess = (nom: string) => {
     setSignataireName(nom)
     setSignedAt(new Date().toISOString())
-    setResult("ACCEPTE")
+    setResult("SIGNE")
     setPageState("done")
     setShowModal(false)
   }
@@ -383,7 +383,7 @@ export function SignaturePage({ token, devis, client, lignes, user }: Props) {
             </div>
           )}
 
-          {pageState === "done" && result === "ACCEPTE" && (
+          {pageState === "done" && result === "SIGNE" && (
             <div className="space-y-4">
               {/* Success banner */}
               <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-8 text-center">

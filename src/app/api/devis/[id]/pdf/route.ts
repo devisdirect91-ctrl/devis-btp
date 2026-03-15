@@ -109,7 +109,7 @@ export async function GET(
   // Si le devis est signé mais que l'upload Supabase avait échoué → génère à la volée
   const signatureSrc = devis.signatureClientUrl ?? devis.signatureClient ?? null
   if (
-    devis.status === "ACCEPTE" &&
+    devis.status === "SIGNE" &&
     signatureSrc &&
     devis.signatureClientNom &&
     devis.dateSignature &&

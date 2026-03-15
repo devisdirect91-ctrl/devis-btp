@@ -148,7 +148,7 @@ export function DevisEditor({
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(buildPayload(sendAfter ? "ENVOYE" : "BROUILLON")),
+        body: JSON.stringify(buildPayload("EN_ATTENTE")),
       })
       const data = await res.json()
       if (!res.ok) {

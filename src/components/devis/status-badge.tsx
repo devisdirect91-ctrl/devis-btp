@@ -3,15 +3,13 @@
 import { useState, useRef, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
-import { FileText, Send, CheckCircle, XCircle, Eye } from "lucide-react"
+import { Clock, CheckCircle, XCircle } from "lucide-react"
 import { STATUS_LABELS, STATUS_STYLES } from "@/lib/client-utils"
 
 const STATUS_OPTIONS = [
-  { value: "BROUILLON", label: "Brouillon", icon: FileText,     cls: "text-slate-600 hover:bg-slate-50" },
-  { value: "ENVOYE",    label: "Envoyé",    icon: Send,         cls: "text-blue-600 hover:bg-blue-50" },
-  { value: "VU",        label: "Vu",        icon: Eye,          cls: "text-purple-600 hover:bg-purple-50" },
-  { value: "ACCEPTE",   label: "Accepté",   icon: CheckCircle,  cls: "text-emerald-600 hover:bg-emerald-50" },
-  { value: "REFUSE",    label: "Refusé",    icon: XCircle,      cls: "text-red-600 hover:bg-red-50" },
+  { value: "EN_ATTENTE", label: "En attente", icon: Clock,        cls: "text-yellow-600 hover:bg-yellow-50" },
+  { value: "SIGNE",      label: "Signé",      icon: CheckCircle,  cls: "text-emerald-600 hover:bg-emerald-50" },
+  { value: "REFUSE",     label: "Refusé",     icon: XCircle,      cls: "text-red-600 hover:bg-red-50" },
 ]
 
 export function StatusBadge({ devisId, status }: { devisId: string; status: string }) {
@@ -82,7 +80,7 @@ export function StatusBadge({ devisId, status }: { devisId: string; status: stri
         onClick={handleOpen}
         disabled={loading}
         className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-opacity ${
-          STATUS_STYLES[status] ?? STATUS_STYLES.BROUILLON
+          STATUS_STYLES[status] ?? STATUS_STYLES.EN_ATTENTE
         } ${loading ? "opacity-50" : "hover:opacity-80 cursor-pointer"}`}
       >
         {STATUS_LABELS[status] ?? status}

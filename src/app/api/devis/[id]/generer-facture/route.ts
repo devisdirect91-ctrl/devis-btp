@@ -29,9 +29,9 @@ export async function POST(
   const safeDevis = devis
 
   // 2. Vérifie que le devis est accepté/signé
-  if (devis.status !== "ACCEPTE") {
+  if (devis.status !== "SIGNE") {
     return NextResponse.json(
-      { error: "Seul un devis accepté peut être transformé en facture" },
+      { error: "Seul un devis signé peut être transformé en facture" },
       { status: 422 }
     )
   }

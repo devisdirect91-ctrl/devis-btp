@@ -207,12 +207,12 @@ export function emailSignatureNotificationArtisan(data: {
   devisTitre: string;
   totalTTC: number;
   clientNom: string;
-  action: "ACCEPTE" | "REFUSE";
+  action: "SIGNE" | "REFUSE";
   dateSignature: Date;
   signatairenom: string;
   motifRefus?: string | null;
 }): string {
-  const isAccepted = data.action === "ACCEPTE";
+  const isAccepted = data.action === "SIGNE";
 
   const accentColor = isAccepted ? "#059669" : "#dc2626";
   const badgeBg = isAccepted ? "#d1fae5" : "#fee2e2";

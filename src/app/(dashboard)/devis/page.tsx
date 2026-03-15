@@ -4,9 +4,10 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { FilePlus } from "lucide-react"
+import { FilePlus, Plus, FileText, CheckCircle, XCircle, Clock, Search } from "lucide-react"
 import { DevisFilters } from "@/components/devis/devis-filters"
 import { DevisTable } from "@/components/devis/devis-table"
+import { clientDisplayName } from "@/lib/client-utils"
 import type { Prisma } from "@prisma/client"
 
 export const metadata = { title: "Mes devis — DevisBTP" }
@@ -31,26 +32,6 @@ function getPeriodDates(periode: string): { gte?: Date } {
   }
 }
 
-function StatCard({
-  label,
-  value,
-  sub,
-  accent,
-}: {
-  label: string
-  value: string | number
-  sub?: string
-  accent?: string
-}) {
-  return (
-    <div className="bg-white rounded-2xl border border-slate-100 px-5 py-4 flex-1 min-w-[140px]">
-      <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">{label}</p>
-      <p className={`text-2xl font-bold ${accent ?? "text-slate-900"}`}>{value}</p>
-      {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
-    </div>
-  )
-}
-
 interface PageProps {
   searchParams: Promise<Record<string, string | undefined>>
 }
@@ -70,7 +51,6 @@ export default async function DevisPage({ searchParams }: PageProps) {
 
   const periodDates = getPeriodDates(periode)
 
-  // Build filter where clause
   const where: Prisma.DevisWhereInput = { userId }
 
   if (search) {
@@ -90,7 +70,6 @@ export default async function DevisPage({ searchParams }: PageProps) {
     where.totalTTC = { ...(existing ?? {}), lte: montantMax }
   }
 
-  // Parallel fetch: filtered list + all for stats
   const [devisList, allStats] = await Promise.all([
     prisma.devis.findMany({
       where,
@@ -109,67 +88,327 @@ export default async function DevisPage({ searchParams }: PageProps) {
     }),
   ])
 
-  // Compute stats
   const byStatus = Object.fromEntries(
     allStats.map((s) => [s.status, { count: s._count.id, total: s._sum.totalTTC ?? 0 }])
   )
   const totalCount = allStats.reduce((s, r) => s + r._count.id, 0)
-  const caAccepte = byStatus.ACCEPTE?.total ?? 0
-  const caEnAttente = byStatus.ENVOYE?.total ?? 0
+  const caSigne = byStatus.SIGNE?.total ?? 0
+
+  // Mobile: group by month
+  function groupByMonth(items: typeof devisList) {
+    const groups: { label: string; key: string; items: typeof devisList }[] = []
+    const seen = new Map<string, number>()
+    for (const d of items) {
+      const date = new Date(d.createdAt)
+      const key = `${date.getFullYear()}-${date.getMonth()}`
+      if (!seen.has(key)) {
+        seen.set(key, groups.length)
+        groups.push({
+          key,
+          label: date.toLocaleDateString("fr-FR", { month: "long", year: "numeric" }),
+          items: [],
+        })
+      }
+      groups[seen.get(key)!].items.push(d)
+    }
+    return groups
+  }
+
+  const grouped = groupByMonth(devisList)
+
+  const fmt = (n: number) =>
+    new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n)
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+    <div className="min-h-screen bg-gray-50">
+
+      {/* ═══════════════ VERSION MOBILE ═══════════════ */}
+      <div className="md:hidden pb-24">
+
         {/* Header */}
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Mes devis</h1>
-            <p className="text-sm text-slate-500 mt-0.5">{totalCount} devis au total</p>
+        <div className="bg-white px-4 py-4 border-b">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Mes devis</h1>
+              <p className="text-sm text-gray-500">
+                {totalCount} devis · {fmt(caSigne)} signés
+              </p>
+            </div>
+            <Link
+              href="/devis/nouveau"
+              className="w-11 h-11 bg-orange-500 rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform"
+            >
+              <Plus className="w-5 h-5 text-white" />
+            </Link>
           </div>
-          <Link
-            href="/devis/nouveau"
-            className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-white rounded-xl font-semibold text-sm transition-colors shadow-sm"
-          >
-            <FilePlus className="w-4 h-4" />
-            Nouveau devis
-          </Link>
         </div>
 
-        {/* Stats */}
-        <div className="flex gap-3 overflow-x-auto pb-1">
-          <StatCard label="Total" value={totalCount} />
-          <StatCard
-            label="Brouillons"
-            value={byStatus.BROUILLON?.count ?? 0}
-            accent="text-slate-700"
-          />
-          <StatCard
-            label="En attente"
-            value={byStatus.ENVOYE?.count ?? 0}
-            sub={caEnAttente > 0 ? caEnAttente.toLocaleString("fr-FR", { style: "currency", currency: "EUR" }) : undefined}
-            accent="text-blue-600"
-          />
-          <StatCard
-            label="Acceptés"
-            value={byStatus.ACCEPTE?.count ?? 0}
-            sub={caAccepte > 0 ? caAccepte.toLocaleString("fr-FR", { style: "currency", currency: "EUR" }) : undefined}
-            accent="text-emerald-600"
-          />
-          <StatCard
-            label="CA signé"
-            value={caAccepte.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}
-            accent="text-emerald-700"
-          />
+        {/* Filtres statut — chips cliquables */}
+        <div className="px-4 pt-4 pb-2">
+          <div className="grid grid-cols-4 gap-2">
+            <FilterChip
+              href="/devis"
+              active={!status}
+              value={totalCount}
+              label="Tous"
+              color="gray"
+            />
+            <FilterChip
+              href="/devis?status=EN_ATTENTE"
+              active={status === "EN_ATTENTE"}
+              value={byStatus.EN_ATTENTE?.count ?? 0}
+              label="En attente"
+              color="yellow"
+            />
+            <FilterChip
+              href="/devis?status=SIGNE"
+              active={status === "SIGNE"}
+              value={byStatus.SIGNE?.count ?? 0}
+              label="Signés"
+              color="green"
+            />
+            <FilterChip
+              href="/devis?status=REFUSE"
+              active={status === "REFUSE"}
+              value={byStatus.REFUSE?.count ?? 0}
+              label="Refusés"
+              color="red"
+            />
+          </div>
         </div>
 
-        {/* Filters */}
-        <Suspense>
-          <DevisFilters count={devisList.length} total={totalCount} />
-        </Suspense>
+        {/* Recherche */}
+        <div className="px-4 pb-3">
+          <MobileSearch defaultValue={search} />
+        </div>
 
-        {/* Table */}
-        <DevisTable devis={devisList as any} />
+        {/* Liste groupée par mois */}
+        <div className="px-4">
+          {devisList.length === 0 ? (
+            <div className="text-center py-14">
+              {search ? (
+                <>
+                  <Search className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 text-sm">Aucun résultat pour &quot;{search}&quot;</p>
+                </>
+              ) : (
+                <>
+                  <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 text-sm">Aucun devis</p>
+                  <Link
+                    href="/devis/nouveau"
+                    className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-orange-500 text-white rounded-xl text-sm font-semibold"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Créer un devis
+                  </Link>
+                </>
+              )}
+            </div>
+          ) : (
+            grouped.map((group) => (
+              <div key={group.key} className="mb-6">
+                {/* Séparateur mois */}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="h-px bg-gray-200 flex-1" />
+                  <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                    {group.label}
+                  </span>
+                  <div className="h-px bg-gray-200 flex-1" />
+                </div>
+
+                <div className="space-y-2">
+                  {group.items.map((d) => {
+                    const isExpired =
+                      d.status === "EN_ATTENTE" &&
+                      d.dateValidite &&
+                      new Date(d.dateValidite) < new Date()
+                    const clientName = clientDisplayName(d.client)
+                    return (
+                      <Link
+                        key={d.id}
+                        href={`/devis/${d.id}`}
+                        className="block bg-white rounded-xl border p-4 active:bg-gray-50 transition-colors"
+                      >
+                        {/* Ligne 1 : client + dot statut */}
+                        <div className="flex justify-between items-start">
+                          <p className="font-semibold text-gray-900 text-sm">{clientName}</p>
+                          <MobileStatusDot status={isExpired ? "EXPIRE" : d.status} />
+                        </div>
+
+                        {/* Ligne 2 : titre */}
+                        {d.titre && (
+                          <p className="text-sm text-gray-500 mt-0.5 line-clamp-1">{d.titre}</p>
+                        )}
+
+                        {/* Ligne 3 : numéro + date + montant */}
+                        <div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-100">
+                          <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                            <span className="font-mono">{d.numero}</span>
+                            <span>·</span>
+                            <span>
+                              {new Date(d.dateEmission).toLocaleDateString("fr-FR", {
+                                day: "numeric",
+                                month: "short",
+                              })}
+                            </span>
+                          </div>
+                          <p className="font-bold text-sm text-gray-900">
+                            {new Intl.NumberFormat("fr-FR", {
+                              style: "currency",
+                              currency: "EUR",
+                              maximumFractionDigits: 0,
+                            }).format(d.totalTTC)}
+                          </p>
+                        </div>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* ═══════════════ VERSION DESKTOP ═══════════════ */}
+      <div className="hidden md:block">
+        <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+          {/* Header desktop */}
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">Mes devis</h1>
+              <p className="text-sm text-slate-500 mt-0.5">{totalCount} devis au total</p>
+            </div>
+            <Link
+              href="/devis/nouveau"
+              className="flex items-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-white rounded-xl font-semibold text-sm transition-colors shadow-sm"
+            >
+              <FilePlus className="w-4 h-4" />
+              Nouveau devis
+            </Link>
+          </div>
+
+          {/* Stats desktop */}
+          <div className="flex gap-3 overflow-x-auto pb-1">
+            {[
+              { label: "Total", value: totalCount, accent: "text-slate-900" },
+              {
+                label: "En attente",
+                value: byStatus.EN_ATTENTE?.count ?? 0,
+                accent: "text-yellow-600",
+              },
+              {
+                label: "Signés",
+                value: byStatus.SIGNE?.count ?? 0,
+                sub: caSigne > 0 ? fmt(caSigne) : undefined,
+                accent: "text-emerald-600",
+              },
+              {
+                label: "Refusés",
+                value: byStatus.REFUSE?.count ?? 0,
+                accent: "text-red-600",
+              },
+              {
+                label: "CA signé",
+                value: fmt(caSigne),
+                accent: "text-emerald-700",
+              },
+            ].map((s) => (
+              <div
+                key={s.label}
+                className="bg-white rounded-2xl border border-slate-100 px-5 py-4 flex-1 min-w-[140px]"
+              >
+                <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">
+                  {s.label}
+                </p>
+                <p className={`text-2xl font-bold ${s.accent}`}>{s.value}</p>
+                {s.sub && <p className="text-xs text-slate-400 mt-0.5">{s.sub}</p>}
+              </div>
+            ))}
+          </div>
+
+          {/* Filters */}
+          <Suspense>
+            <DevisFilters count={devisList.length} total={totalCount} />
+          </Suspense>
+
+          {/* Table */}
+          <DevisTable devis={devisList as any} />
+        </div>
       </div>
     </div>
+  )
+}
+
+// ─── Composants mobiles ───────────────────────────────────────────────────────
+
+function FilterChip({
+  href,
+  active,
+  value,
+  label,
+  color,
+}: {
+  href: string
+  active: boolean
+  value: number
+  label: string
+  color: "gray" | "yellow" | "green" | "red"
+}) {
+  const activeStyles = {
+    gray: "bg-gray-900 text-white",
+    yellow: "bg-yellow-500 text-white",
+    green: "bg-green-500 text-white",
+    red: "bg-red-500 text-white",
+  }
+  const inactiveStyles = {
+    gray: "bg-white border text-gray-700",
+    yellow: "bg-white border text-yellow-600",
+    green: "bg-white border text-green-600",
+    red: "bg-white border text-red-600",
+  }
+
+  return (
+    <Link
+      href={href}
+      className={`rounded-xl p-2.5 text-center transition-all active:scale-95 ${
+        active ? activeStyles[color] : inactiveStyles[color]
+      }`}
+    >
+      <p className="text-lg font-bold leading-tight">{value}</p>
+      <p className="text-[10px] mt-0.5 opacity-80 leading-tight">{label}</p>
+    </Link>
+  )
+}
+
+function MobileSearch({ defaultValue }: { defaultValue: string }) {
+  return (
+    <form method="GET" action="/devis">
+      <div className="relative">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        <input
+          type="text"
+          name="search"
+          placeholder="Rechercher un client, numéro…"
+          defaultValue={defaultValue}
+          className="w-full h-11 pl-10 pr-4 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+        />
+      </div>
+    </form>
+  )
+}
+
+function MobileStatusDot({ status }: { status: string }) {
+  const colors: Record<string, string> = {
+    EN_ATTENTE: "bg-yellow-400",
+    SIGNE: "bg-green-500",
+    REFUSE: "bg-red-500",
+    EXPIRE: "bg-orange-400",
+  }
+  return (
+    <div
+      className={`w-2.5 h-2.5 rounded-full flex-shrink-0 mt-0.5 ${colors[status] ?? "bg-gray-300"}`}
+    />
   )
 }

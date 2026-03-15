@@ -65,7 +65,7 @@ function EmailModal({
       await fetch(`/api/devis/${devis.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "ENVOYE" }),
+        body: JSON.stringify({ status: "EN_ATTENTE" }),
       })
       setIsLoading(false)
       onSent()
@@ -176,7 +176,7 @@ function RowActions({
           className="w-52 bg-white border border-slate-200 rounded-xl shadow-lg py-1 overflow-hidden"
         >
           <MenuItem icon={Eye} href={`/devis/${devis.id}`} label="Voir le devis" onClose={() => setOpen(false)} />
-          {(devis.status === "BROUILLON" || devis.status === "ENVOYE") && (
+          {devis.status === "EN_ATTENTE" && (
             <MenuItem icon={Edit} href={`/devis/${devis.id}/modifier`} label="Modifier" onClose={() => setOpen(false)} />
           )}
           <button
@@ -398,7 +398,7 @@ export function DevisTable({ devis }: DevisTableProps) {
       {/* Mobile cards */}
       <div className="md:hidden space-y-3">
         {sorted.map((d) => {
-          const isExpired = d.status === "ENVOYE" && d.dateValidite && new Date(d.dateValidite) < new Date()
+          const isExpired = d.status === "EN_ATTENTE" && d.dateValidite && new Date(d.dateValidite) < new Date()
           const displayStatus = isExpired ? "EXPIRE" : d.status
           return (
             <div key={d.id} className="bg-white rounded-2xl border border-slate-100 p-4">
@@ -523,7 +523,7 @@ export function DevisTable({ devis }: DevisTableProps) {
             <tbody className="divide-y divide-slate-50">
               {sorted.map((d) => {
                 const isExpired =
-                  d.status === "ENVOYE" && d.dateValidite && new Date(d.dateValidite) < new Date()
+                  d.status === "EN_ATTENTE" && d.dateValidite && new Date(d.dateValidite) < new Date()
                 const displayStatus = isExpired ? "EXPIRE" : d.status
 
                 return (

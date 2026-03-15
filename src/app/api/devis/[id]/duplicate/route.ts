@@ -33,7 +33,7 @@ export async function POST(
       numeroAnnee: year,
       numeroSequence: seq,
       titre: `Copie — ${source.titre}`,
-      status: "BROUILLON",
+      status: "EN_ATTENTE",
       signatureToken: crypto.randomUUID(),
       validiteJours: source.validiteJours,
       dateEmission: new Date(),

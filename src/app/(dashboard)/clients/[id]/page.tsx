@@ -55,7 +55,7 @@ export default async function ClientDetailPage({
   const isPro = client.type === "PROFESSIONNEL"
 
   const totalAccepte = client.devis
-    .filter((d) => d.status === "ACCEPTE")
+    .filter((d) => d.status === "SIGNE")
     .reduce((sum, d) => sum + d.totalTTC, 0)
 
   return (

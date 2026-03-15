@@ -82,12 +82,12 @@ export async function POST(
   })
   if (!devis) return NextResponse.json({ error: "Devis introuvable" }, { status: 404 })
 
-  // Passe en ENVOYE seulement si BROUILLON ou déjà ENVOYE (ré-envoi)
-  if (devis.status === "BROUILLON" || devis.status === "ENVOYE") {
+  // Marque comme en attente (envoyé) si pas encore signé/refusé
+  if (devis.status === "EN_ATTENTE") {
     await prisma.devis.update({
       where: { id },
       data: {
-        status: "ENVOYE",
+        status: "EN_ATTENTE",
         dateEnvoi: new Date(),
       },
     })

@@ -61,8 +61,8 @@ async function getStats(userId: string) {
       where: { userId, status: { not: "BROUILLON" } },
       _sum: { totalTTC: true, montantPaye: true },
     }),
-    prisma.devis.count({ where: { userId, status: "ACCEPTE" } }),
-    prisma.devis.count({ where: { userId, status: { in: ["ENVOYE", "VU"] } } }),
+    prisma.devis.count({ where: { userId, status: "SIGNE" } }),
+    prisma.devis.count({ where: { userId, status: "EN_ATTENTE" } }),
     prisma.devis.count({ where: { userId, status: "REFUSE" } }),
     prisma.devis.findMany({
       where: { userId },
@@ -111,9 +111,9 @@ export default async function DashboardPage() {
   const [devisCeMois, devisEnvoyesTotal, montantAccepteAgg, recentDevisDesktop] =
     await Promise.all([
       prisma.devis.count({ where: { userId, dateEmission: { gte: startOfMonth } } }),
-      prisma.devis.count({ where: { userId, status: "ENVOYE" } }),
+      prisma.devis.count({ where: { userId, status: "EN_ATTENTE" } }),
       prisma.devis.aggregate({
-        where: { userId, status: "ACCEPTE" },
+        where: { userId, status: "SIGNE" },
         _sum: { totalTTC: true },
       }),
       prisma.devis.findMany({
@@ -644,12 +644,9 @@ function StatCard({
 
 function StatusDot({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    ACCEPTE: "bg-green-500",
-    ENVOYE: "bg-yellow-500",
-    VU: "bg-blue-400",
+    SIGNE: "bg-green-500",
+    EN_ATTENTE: "bg-yellow-500",
     REFUSE: "bg-red-500",
-    BROUILLON: "bg-gray-300",
-    EXPIRE: "bg-gray-400",
   };
   return (
     <div

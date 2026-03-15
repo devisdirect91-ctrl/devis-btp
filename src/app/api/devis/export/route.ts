@@ -6,11 +6,9 @@ import { clientDisplayName } from "@/lib/client-utils"
 import type { Prisma } from "@prisma/client"
 
 const STATUS_FR: Record<string, string> = {
-  BROUILLON: "Brouillon",
-  ENVOYE: "Envoyé",
-  ACCEPTE: "Accepté",
+  EN_ATTENTE: "En attente",
+  SIGNE: "Signé",
   REFUSE: "Refusé",
-  EXPIRE: "Expiré",
 }
 
 function esc(v: string | number | null | undefined): string {

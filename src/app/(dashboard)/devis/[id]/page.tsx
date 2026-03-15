@@ -51,7 +51,7 @@ function Timeline({ devis }: {
   }
 }) {
   const isExpired =
-    devis.status === "ENVOYE" && devis.dateValidite && new Date(devis.dateValidite) < new Date()
+    devis.status === "EN_ATTENTE" && devis.dateValidite && new Date(devis.dateValidite) < new Date()
 
   const events: TimelineEvent[] = [
     {
@@ -72,14 +72,14 @@ function Timeline({ devis }: {
       label: devis.dateEnvoi ? "Envoyé au client" : "Envoi client",
       date: devis.dateEnvoi,
       icon: Send,
-      done: !!devis.dateEnvoi || ["ENVOYE", "ACCEPTE", "REFUSE"].includes(devis.status),
+      done: !!devis.dateEnvoi || ["SIGNE", "REFUSE"].includes(devis.status),
       color: "text-blue-700 bg-blue-100",
     },
   ]
 
-  if (devis.status === "ACCEPTE") {
+  if (devis.status === "SIGNE") {
     events.push({
-      label: "Accepté",
+      label: "Signé",
       date: devis.dateSignature,
       icon: CheckCircle2,
       done: true,
@@ -238,7 +238,7 @@ export default async function DevisDetailPage({
   }
 
   const isExpired =
-    devis.status === "ENVOYE" && devis.dateValidite && new Date(devis.dateValidite) < new Date()
+    devis.status === "EN_ATTENTE" && devis.dateValidite && new Date(devis.dateValidite) < new Date()
   const displayStatus = isExpired ? "EXPIRE" : devis.status
 
   return (
@@ -273,7 +273,7 @@ export default async function DevisDetailPage({
               devisId={devis.id}
               numero={devis.numero}
               status={devis.status}
-              canEdit={devis.status === "BROUILLON" || devis.status === "ENVOYE"}
+              canEdit={devis.status === "EN_ATTENTE"}
               signatureToken={devis.signatureToken}
             />
           </div>
@@ -297,7 +297,7 @@ export default async function DevisDetailPage({
           <FileDown className="w-4 h-4" />
           PDF
         </a>
-        {(devis.status === "BROUILLON" || devis.status === "ENVOYE") && (
+        {devis.status === "EN_ATTENTE" && (
           <a
             href={`/devis/${devis.id}/modifier`}
             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium text-blue-700 bg-blue-50 active:bg-blue-100 rounded-xl transition-colors"
@@ -520,7 +520,7 @@ export default async function DevisDetailPage({
           </div>
 
           {/* Facture card */}
-          {devis.status === "ACCEPTE" && (
+          {devis.status === "SIGNE" && (
             <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-3">
               <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-1.5">
                 <Receipt className="w-3.5 h-3.5" />
