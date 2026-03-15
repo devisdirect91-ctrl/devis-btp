@@ -91,7 +91,7 @@ export default async function FacturesPage({ searchParams }: PageProps) {
 
   const enAttente = allFactures.filter((f) => {
     const st = computeFactureStatus(f.status, new Date(f.dateEcheance))
-    return st === "EN_ATTENTE" || st === "PARTIELLEMENT_PAYEE"
+    return st === "EN_ATTENTE"
   })
   const enRetard = allFactures.filter(
     (f) => computeFactureStatus(f.status, new Date(f.dateEcheance)) === "EN_RETARD"
