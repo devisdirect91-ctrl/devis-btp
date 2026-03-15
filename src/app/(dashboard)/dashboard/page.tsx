@@ -148,6 +148,7 @@ export default async function DashboardPage() {
               label="Devis"
               gradient="from-orange-400 to-orange-600"
               shadow="shadow-orange-200"
+              plusColor="text-orange-500"
             />
             <QuickAction
               href="/factures/nouveau"
@@ -155,6 +156,7 @@ export default async function DashboardPage() {
               label="Facture"
               gradient="from-blue-400 to-blue-600"
               shadow="shadow-blue-200"
+              plusColor="text-blue-500"
             />
             <QuickAction
               href="/clients/new"
@@ -162,6 +164,7 @@ export default async function DashboardPage() {
               label="Client"
               gradient="from-green-400 to-green-600"
               shadow="shadow-green-200"
+              plusColor="text-green-500"
             />
           </div>
         </section>
@@ -561,19 +564,26 @@ function QuickAction({
   label,
   gradient,
   shadow,
+  plusColor,
 }: {
   href: string;
   icon: React.ElementType;
   label: string;
   gradient: string;
   shadow: string;
+  plusColor: string;
 }) {
   return (
     <Link href={href} className="flex flex-col items-center">
-      <div
-        className={`w-20 h-20 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg ${shadow} active:scale-95 transition-transform`}
-      >
-        <Icon className="w-8 h-8 text-white" />
+      <div className="relative">
+        <div
+          className={`w-20 h-20 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg ${shadow} active:scale-95 transition-transform`}
+        >
+          <Icon className="w-8 h-8 text-white" />
+        </div>
+        <div className="absolute -top-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-md border border-gray-100">
+          <span className={`${plusColor} font-bold text-sm leading-none`}>+</span>
+        </div>
       </div>
       <span className="mt-2 text-sm font-medium text-gray-700">{label}</span>
     </Link>
