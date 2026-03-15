@@ -6,6 +6,7 @@ import Link from "next/link"
 import { HardHat, Bell, ChevronDown, Menu, X } from "lucide-react"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { MobileNav } from "@/components/layout/MobileNav"
+import { FloatingActionButton } from "@/components/ui/FloatingActionButton"
 
 interface DashboardShellProps {
   children: React.ReactNode
@@ -144,6 +145,11 @@ export function DashboardShell({
         <main className="flex-1 overflow-y-auto overflow-x-hidden pb-16 md:pb-0">
           {children}
         </main>
+      </div>
+
+      {/* FAB mobile */}
+      <div className="md:hidden">
+        <FloatingActionButton />
       </div>
 
       {/* Bottom nav mobile */}

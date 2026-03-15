@@ -153,20 +153,12 @@ export default async function FacturesPage({ searchParams }: PageProps) {
 
         {/* Header */}
         <div className="bg-white px-4 py-4 border-b">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">Mes factures</h1>
-              <p className="text-sm text-gray-500">
-                {fmtMontant(totalEncaisse)} encaissés ·{" "}
-                {fmtMontant(montantEnAttente)} en attente
-              </p>
-            </div>
-            <Link
-              href="/factures/nouveau"
-              className="w-11 h-11 bg-blue-500 rounded-full flex items-center justify-center shadow-md active:scale-95 transition-transform"
-            >
-              <Plus className="w-5 h-5 text-white" />
-            </Link>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Mes factures</h1>
+            <p className="text-sm text-gray-500">
+              {fmtMontant(totalEncaisse)} encaissés ·{" "}
+              {fmtMontant(montantEnAttente)} en attente
+            </p>
           </div>
         </div>
 
