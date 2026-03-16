@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { HardHat, Bell, ChevronDown, Menu, X, Settings } from "lucide-react"
+import { HardHat, Bell, ChevronDown, Menu, X, Settings, LogOut } from "lucide-react"
+import { signOut } from "next-auth/react"
 import { SidebarNav } from "@/components/sidebar-nav"
 import { MobileNav } from "@/components/layout/MobileNav"
 import { FloatingActionButton } from "@/components/ui/FloatingActionButton"
@@ -24,12 +25,27 @@ export function DashboardShell({
   email,
 }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const settingsRef = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
 
-  // Ferme le sidebar mobile à chaque changement de page
+  // Ferme les menus à chaque changement de page
   useEffect(() => {
     setSidebarOpen(false)
+    setSettingsOpen(false)
   }, [pathname])
+
+  // Ferme le dropdown réglages au clic extérieur
+  useEffect(() => {
+    if (!settingsOpen) return
+    function handleClick(e: MouseEvent) {
+      if (settingsRef.current && !settingsRef.current.contains(e.target as Node)) {
+        setSettingsOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [settingsOpen])
 
   // Verrouille le scroll body quand le drawer est ouvert
   useEffect(() => {
@@ -119,33 +135,61 @@ export function DashboardShell({
           {/* Espace desktop */}
           <div className="hidden md:block flex-1" />
 
-          {/* Droite mobile : bouton réglages */}
-          <Link
-            href="/parametres"
-            className="md:hidden w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 active:bg-slate-200 transition-colors text-slate-600 flex-shrink-0"
-            aria-label="Réglages"
-          >
-            <Settings className="w-5 h-5" />
-          </Link>
+          {/* Droite : bouton réglages (mobile + desktop) */}
+          <div ref={settingsRef} className="relative flex-shrink-0">
 
-          {/* Droite desktop : notif + profil */}
-          <div className="hidden md:flex items-center gap-2">
+            {/* Mobile : icône réglages */}
             <button
-              className="relative w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors text-slate-500"
-              title="Notifications"
+              onClick={() => setSettingsOpen(v => !v)}
+              className="md:hidden w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 active:bg-slate-200 transition-colors text-slate-600"
+              aria-label="Réglages"
             >
-              <Bell className="w-4 h-4" />
+              {settingsOpen ? <X className="w-5 h-5" /> : <Settings className="w-5 h-5" />}
             </button>
-            <Link
-              href="/parametres"
-              className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 text-xs font-bold flex-shrink-0">
-                {initials}
+
+            {/* Desktop : profil + chevron */}
+            <div className="hidden md:flex items-center gap-2">
+              <button
+                className="relative w-9 h-9 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors text-slate-500"
+                title="Notifications"
+              >
+                <Bell className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setSettingsOpen(v => !v)}
+                className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 text-xs font-bold flex-shrink-0">
+                  {initials}
+                </div>
+                <span className="text-sm font-medium text-slate-700">{firstName}</span>
+                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${settingsOpen ? "rotate-180" : ""}`} />
+              </button>
+            </div>
+
+            {/* Dropdown */}
+            {settingsOpen && (
+              <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-50">
+                <div className="px-4 py-2.5 border-b border-slate-100">
+                  <p className="text-sm font-semibold text-slate-800 truncate">{userName}</p>
+                  <p className="text-xs text-slate-500 truncate">{email}</p>
+                </div>
+                <Link
+                  href="/parametres"
+                  className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  <Settings className="w-4 h-4 text-slate-400" />
+                  Paramètres
+                </Link>
+                <button
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Se déconnecter
+                </button>
               </div>
-              <span className="text-sm font-medium text-slate-700">{firstName}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-            </Link>
+            )}
           </div>
         </header>
 
