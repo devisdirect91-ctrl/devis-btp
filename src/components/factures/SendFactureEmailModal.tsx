@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import {
-  X, Mail, Copy, Check, Loader2, ExternalLink, FileText,
+  X, Mail, Copy, Check, Loader2, ExternalLink, FileText, MessageSquare,
 } from "lucide-react"
 
 interface EmailData {
@@ -17,6 +17,8 @@ interface EmailData {
   companyEmail: string
   factureNumero: string
   totalTTC: number
+  montantPaye: number
+  status: string
   dateEcheance: string | null
   conditionsPaiement: string
 }
@@ -26,52 +28,116 @@ interface SendFactureEmailModalProps {
   onClose: () => void
 }
 
-function eur(n: number) {
-  return n.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })
+function fmtMontant(n: number) {
+  return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 function fmtDate(iso: string | null) {
-  if (!iso) return null
+  if (!iso) return ""
   return new Date(iso).toLocaleDateString("fr-FR", {
     day: "numeric", month: "long", year: "numeric",
   })
 }
 
+function getJoursRetard(dateEcheance: string | null): number {
+  if (!dateEcheance) return 0
+  return Math.floor((Date.now() - new Date(dateEcheance).getTime()) / 86400000)
+}
+
+type EmailType = "rappel" | "relance" | "derniere"
+
+function getEmailType(dateEcheance: string | null): EmailType {
+  const jours = getJoursRetard(dateEcheance)
+  if (jours > 30) return "derniere"
+  if (jours > 0) return "relance"
+  return "rappel"
+}
+
 function buildSubject(data: EmailData): string {
-  return `Facture N°${data.factureNumero} — ${eur(data.totalTTC)}`
+  const type = getEmailType(data.dateEcheance)
+  if (type === "derniere") return `URGENT - Facture ${data.factureNumero} impayée`
+  if (type === "relance")  return `Relance facture ${data.factureNumero} - Paiement en retard`
+  return `Rappel facture ${data.factureNumero}`
 }
 
 function buildBody(data: EmailData): string {
-  const lines: string[] = []
-  lines.push(`Bonjour ${data.clientPrenom},`)
-  lines.push("")
-  lines.push(
-    `Veuillez trouver ci-dessous votre facture N°${data.factureNumero} d'un montant de ${eur(data.totalTTC)} TTC.`
-  )
-  lines.push("")
-  lines.push("📄 Consulter votre facture en ligne :")
-  lines.push(data.consultationUrl)
-  lines.push("")
-  if (data.dateEcheance) {
-    lines.push(`📅 Date d'échéance : ${fmtDate(data.dateEcheance)}`)
-    lines.push("")
+  const type = getEmailType(data.dateEcheance)
+  const montantRestant = fmtMontant(data.totalTTC - data.montantPaye)
+  const joursRetard = getJoursRetard(data.dateEcheance)
+  const signature = [data.companyName, data.companyPhone, data.companyEmail]
+    .filter(Boolean).join("\n")
+
+  if (type === "rappel") {
+    return [
+      `Bonjour ${data.clientName},`,
+      "",
+      `Je me permets de vous adresser un petit rappel concernant la facture n°${data.factureNumero} d'un montant de ${montantRestant} €.`,
+      `La date d'échéance est fixée au ${fmtDate(data.dateEcheance)}.`,
+      "",
+      "Vous pouvez consulter et télécharger votre facture ici :",
+      data.consultationUrl,
+      "",
+      "Je reste à votre disposition pour toute question.",
+      "",
+      "Cordialement,",
+      signature,
+    ].join("\n")
   }
-  if (data.conditionsPaiement) {
-    lines.push("💳 Conditions de paiement :")
-    lines.push(data.conditionsPaiement)
-    lines.push("")
+
+  if (type === "relance") {
+    return [
+      `Bonjour ${data.clientName},`,
+      "",
+      `Sauf erreur de ma part, je n'ai pas encore reçu le règlement de la facture n°${data.factureNumero} d'un montant de ${montantRestant} €.`,
+      `Cette facture était à régler avant le ${fmtDate(data.dateEcheance)}, soit un retard de ${joursRetard} jour(s).`,
+      "",
+      "Vous pouvez consulter et télécharger votre facture ici :",
+      data.consultationUrl,
+      "",
+      "Merci de bien vouloir procéder au règlement dans les meilleurs délais.",
+      "Si vous avez déjà effectué le paiement, je vous prie de ne pas tenir compte de ce message.",
+      "",
+      "Cordialement,",
+      signature,
+    ].join("\n")
   }
-  lines.push("Merci pour votre confiance.")
-  lines.push("")
-  lines.push("Cordialement,")
-  if (data.companyName) lines.push(data.companyName)
-  if (data.companyPhone) lines.push(data.companyPhone)
-  if (data.companyEmail) lines.push(data.companyEmail)
-  return lines.join("\n")
+
+  // derniere
+  return [
+    `Bonjour ${data.clientName},`,
+    "",
+    `Malgré mes précédents rappels, je constate que la facture n°${data.factureNumero} d'un montant de ${montantRestant} € reste impayée.`,
+    `Cette facture est en retard de ${joursRetard} jours (échéance : ${fmtDate(data.dateEcheance)}).`,
+    "",
+    "Je vous remercie de bien vouloir régulariser cette situation dans les plus brefs délais afin d'éviter d'éventuelles pénalités de retard.",
+    "",
+    "Facture disponible ici :",
+    data.consultationUrl,
+    "",
+    "Restant à votre disposition,",
+    signature,
+  ].join("\n")
+}
+
+function buildSms(data: EmailData): string {
+  const type = getEmailType(data.dateEcheance)
+  const montantRestant = fmtMontant(data.totalTTC - data.montantPaye)
+  const joursRetard = getJoursRetard(data.dateEcheance)
+
+  if (type === "rappel") {
+    return `Bonjour, rappel pour la facture ${data.factureNumero} de ${montantRestant}€ à régler avant le ${fmtDate(data.dateEcheance)}. ${data.companyName}`
+  }
+  return `Bonjour, la facture ${data.factureNumero} de ${montantRestant}€ est en attente depuis ${joursRetard}j. Merci de régulariser. ${data.companyName}`
 }
 
 function buildMailto(data: EmailData): string {
   return `mailto:${encodeURIComponent(data.clientEmail)}?subject=${encodeURIComponent(buildSubject(data))}&body=${encodeURIComponent(buildBody(data))}`
+}
+
+const TYPE_LABELS: Record<EmailType, { title: string; color: string; bg: string }> = {
+  rappel:   { title: "Rappel de paiement",   color: "text-amber-600",  bg: "bg-amber-100"  },
+  relance:  { title: "Relance client",        color: "text-orange-600", bg: "bg-orange-100" },
+  derniere: { title: "Dernière relance",      color: "text-red-600",    bg: "bg-red-100"    },
 }
 
 export function SendFactureEmailModal({ factureId, onClose }: SendFactureEmailModalProps) {
@@ -79,7 +145,8 @@ export function SendFactureEmailModal({ factureId, onClose }: SendFactureEmailMo
   const [data, setData] = useState<EmailData | null>(null)
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [copiedEmail, setCopiedEmail] = useState(false)
+  const [copiedSms, setCopiedSms] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
 
   const showToast = (msg: string) => {
@@ -107,13 +174,24 @@ export function SendFactureEmailModal({ factureId, onClose }: SendFactureEmailMo
     }
   }, [data, factureId, router, onClose])
 
-  const handleCopy = useCallback(async () => {
+  const handleCopyEmail = useCallback(async () => {
     if (!data) return
     await navigator.clipboard.writeText(`Sujet : ${buildSubject(data)}\n\n${buildBody(data)}`)
-    setCopied(true)
-    showToast("Message copié !")
-    setTimeout(() => setCopied(false), 2500)
+    setCopiedEmail(true)
+    showToast("Email copié !")
+    setTimeout(() => setCopiedEmail(false), 2500)
   }, [data])
+
+  const handleCopySms = useCallback(async () => {
+    if (!data) return
+    await navigator.clipboard.writeText(buildSms(data))
+    setCopiedSms(true)
+    showToast("SMS copié !")
+    setTimeout(() => setCopiedSms(false), 2500)
+  }, [data])
+
+  const type = data ? getEmailType(data.dateEcheance) : "rappel"
+  const typeLabel = TYPE_LABELS[type]
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
@@ -128,11 +206,11 @@ export function SendFactureEmailModal({ factureId, onClose }: SendFactureEmailMo
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
-              <Mail className="w-4 h-4 text-orange-600" />
+            <div className={`w-8 h-8 rounded-full ${typeLabel.bg} flex items-center justify-center`}>
+              <Mail className={`w-4 h-4 ${typeLabel.color}`} />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-slate-900">Envoyer la facture</h2>
+              <h2 className="text-base font-semibold text-slate-900">{typeLabel.title}</h2>
               {data && <p className="text-xs text-slate-500">{data.clientEmail || "Aucun email"}</p>}
             </div>
           </div>
@@ -162,35 +240,44 @@ export function SendFactureEmailModal({ factureId, onClose }: SendFactureEmailMo
                   <span className="font-semibold text-slate-800">{data.clientName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Montant TTC</span>
-                  <span className="font-bold text-slate-900">{eur(data.totalTTC)}</span>
+                  <span className="text-slate-500">Montant restant</span>
+                  <span className="font-bold text-slate-900">{fmtMontant(data.totalTTC - data.montantPaye)} €</span>
                 </div>
                 {data.dateEcheance && (
                   <div className="flex justify-between">
                     <span className="text-slate-500">Échéance</span>
-                    <span className="text-slate-700">{fmtDate(data.dateEcheance)}</span>
+                    <span className={getJoursRetard(data.dateEcheance) > 0 ? "text-red-600 font-medium" : "text-slate-700"}>
+                      {fmtDate(data.dateEcheance)}
+                      {getJoursRetard(data.dateEcheance) > 0 && ` (+${getJoursRetard(data.dateEcheance)}j)`}
+                    </span>
                   </div>
                 )}
               </div>
 
-              {/* Banner info */}
-              <div className="bg-orange-50 border border-orange-200 rounded-xl px-4 py-3 flex gap-3">
-                <Mail className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-orange-700 leading-relaxed">
-                  Votre messagerie s'ouvrira avec l'email pré-rempli incluant le lien de consultation.
-                  Le lien permet aussi de savoir si le client a consulté la facture.
+              {/* Aperçu email */}
+              <div>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5" /> Email
                 </p>
+                <div className="rounded-xl border border-slate-200 overflow-hidden text-sm">
+                  <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide mr-2">Objet</span>
+                    <span className="text-slate-800 font-medium">{buildSubject(data)}</span>
+                  </div>
+                  <pre className="px-4 py-3 whitespace-pre-wrap font-sans text-slate-700 leading-relaxed text-xs max-h-48 overflow-y-auto">
+                    {buildBody(data)}
+                  </pre>
+                </div>
               </div>
 
-              {/* Aperçu email */}
-              <div className="rounded-xl border border-slate-200 overflow-hidden text-sm">
-                <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide mr-2">Objet</span>
-                  <span className="text-slate-800 font-medium">{buildSubject(data)}</span>
+              {/* Aperçu SMS */}
+              <div>
+                <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5" /> SMS
+                </p>
+                <div className="rounded-xl border border-slate-200 px-4 py-3 text-xs text-slate-700 leading-relaxed bg-slate-50">
+                  {buildSms(data)}
                 </div>
-                <pre className="px-4 py-3 whitespace-pre-wrap font-sans text-slate-700 leading-relaxed text-xs max-h-48 overflow-y-auto">
-                  {buildBody(data)}
-                </pre>
               </div>
 
               {/* Liens rapides */}
@@ -224,18 +311,31 @@ export function SendFactureEmailModal({ factureId, onClose }: SendFactureEmailMo
         <div className="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row gap-2">
           <button
             type="button"
-            onClick={handleCopy}
+            onClick={handleCopySms}
             disabled={!data || loading}
             className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-50"
           >
-            {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-            {copied ? "Copié !" : "Copier le message"}
+            {copiedSms ? <Check className="w-4 h-4 text-emerald-600" /> : <MessageSquare className="w-4 h-4" />}
+            {copiedSms ? "SMS copié !" : "Copier SMS"}
+          </button>
+          <button
+            type="button"
+            onClick={handleCopyEmail}
+            disabled={!data || loading}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-50"
+          >
+            {copiedEmail ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+            {copiedEmail ? "Copié !" : "Copier email"}
           </button>
           <button
             type="button"
             onClick={handleOpenMailto}
             disabled={!data || loading || sending}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-xl transition-colors disabled:opacity-50 shadow-sm"
+            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors disabled:opacity-50 shadow-sm ${
+              type === "derniere" ? "bg-red-500 hover:bg-red-600"
+              : type === "relance" ? "bg-orange-500 hover:bg-orange-600"
+              : "bg-amber-500 hover:bg-amber-600"
+            }`}
           >
             {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
             Ouvrir ma messagerie

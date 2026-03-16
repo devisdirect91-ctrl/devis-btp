@@ -80,6 +80,8 @@ export async function GET(
     companyEmail: user?.companyEmail ?? "",
     factureNumero: facture.numero,
     totalTTC: facture.totalTTC,
+    montantPaye: facture.montantPaye,
+    status: facture.status,
     dateEcheance: facture.dateEcheance.toISOString(),
     conditionsPaiement: facture.conditionsPaiement ?? "",
   })
