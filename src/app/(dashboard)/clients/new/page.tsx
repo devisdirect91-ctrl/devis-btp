@@ -5,7 +5,7 @@ import Link from "next/link"
 import { ChevronLeft } from "lucide-react"
 import { ClientForm } from "@/components/clients/client-form"
 
-export const metadata = { title: "Nouveau client — DevisBTP" }
+export const metadata = { title: "Nouveau client — BTPoche" }
 
 export default async function NewClientPage() {
   const session = await getServerSession(authOptions)

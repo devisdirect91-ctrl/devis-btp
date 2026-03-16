@@ -9,7 +9,7 @@ import { ClientFilters } from "@/components/clients/client-filters"
 import { DeleteClientButton } from "@/components/clients/delete-client-button"
 import { clientDisplayName, clientInitials } from "@/lib/client-utils"
 
-export const metadata = { title: "Mes clients — DevisBTP" }
+export const metadata = { title: "Mes clients — BTPoche" }
 
 interface PageProps {
   searchParams: Promise<{ search?: string; type?: string; page?: string }>

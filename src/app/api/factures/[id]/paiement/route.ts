@@ -97,7 +97,7 @@ export async function POST(
                   <tr style="border-top:1px solid #e2e8f0"><td style="padding:8px 0 4px;font-weight:700;font-size:16px">Montant total réglé</td><td style="text-align:right;font-weight:700;font-size:16px;color:#059669">${montantFormatted}</td></tr>
                 </table>
               </div>
-              <p style="margin:0;color:#64748b;font-size:13px">Cordialement,<br><strong>${facture.user.companyName ?? "DevisBTP"}</strong></p>
+              <p style="margin:0;color:#64748b;font-size:13px">Cordialement,<br><strong>${facture.user.companyName ?? "BTPoche"}</strong></p>
             </div>
           </div>
         `,

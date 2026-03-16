@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { CatalogueView } from "@/components/catalogue/catalogue-view"
 
-export const metadata = { title: "Catalogue — DevisBTP" }
+export const metadata = { title: "Catalogue — BTPoche" }
 
 export default async function CataloguePage() {
   const session = await getServerSession(authOptions)

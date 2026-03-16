@@ -3,7 +3,7 @@ import { Resend } from "resend";
 const FROM_ADDRESS =
   process.env.RESEND_API_KEY &&
   !process.env.RESEND_API_KEY.startsWith("re_test")
-    ? "noreply@devis-btp.fr"
+    ? "noreply@btpoche.fr"
     : "onboarding@resend.dev";
 
 export async function sendEmail(opts: {
@@ -76,7 +76,7 @@ function baseLayout(headerTitle: string, body: string): string {
           <!-- Header -->
           <tr>
             <td style="background-color:#0a1628;padding:24px 32px;">
-              <p style="margin:0;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">DevisBTP</p>
+              <p style="margin:0;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">BTPoche</p>
               <p style="margin:4px 0 0;font-size:13px;color:#94a3b8;">${headerTitle}</p>
             </td>
           </tr>
@@ -90,7 +90,7 @@ function baseLayout(headerTitle: string, body: string): string {
           <tr>
             <td style="padding:16px 32px 24px;border-top:1px solid #e5e7eb;">
               <p style="margin:0;font-size:11px;color:#9ca3af;text-align:center;">
-                Cet email a été envoyé automatiquement par DevisBTP. Merci de ne pas répondre directement à ce message.
+                Cet email a été envoyé automatiquement par BTPoche. Merci de ne pas répondre directement à ce message.
               </p>
             </td>
           </tr>

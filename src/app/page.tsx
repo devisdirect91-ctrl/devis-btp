@@ -251,7 +251,7 @@ export default function LandingPage() {
           </div>
           <div className="text-center mt-10">
             <p className="text-2xl font-black text-orange-500" style={{ fontFamily: "var(--font-barlow)" }}>
-              DevisBTP résout ces 3 problèmes. →
+              BTPoche résout ces 3 problèmes. →
             </p>
           </div>
         </div>
@@ -564,7 +564,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 border border-orange-500/20 rounded-full mb-8">
             <HardHat className="w-4 h-4 text-orange-400" />
-            <span className="text-orange-400 text-sm font-semibold">Rejoignez 500+ artisans qui font confiance à DevisBTP</span>
+            <span className="text-orange-400 text-sm font-semibold">Rejoignez 500+ artisans qui font confiance à BTPoche</span>
           </div>
           <h2 className="text-5xl sm:text-7xl font-black text-white mb-6 leading-none" style={{ fontFamily: "var(--font-barlow)" }}>
             PRÊT À SIGNER<br />
@@ -648,7 +648,7 @@ export default function LandingPage() {
           </div>
           <div className="border-t border-white/5 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-slate-600 text-xs">
-              © 2024 DevisBTP. Tous droits réservés.
+              © 2024 BTPoche. Tous droits réservés.
             </p>
             <p className="text-slate-600 text-xs">
               Made with ❤️ pour les artisans de France

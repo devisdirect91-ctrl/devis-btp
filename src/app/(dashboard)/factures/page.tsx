@@ -11,7 +11,7 @@ import { computeFactureStatus, eur } from "@/lib/facture-utils"
 import Link from "next/link"
 import { FilePlus, Plus, Search, Receipt, AlertTriangle } from "lucide-react"
 
-export const metadata = { title: "Mes factures — DevisBTP" }
+export const metadata = { title: "Mes factures — BTPoche" }
 
 function getPeriodDates(periode: string): { gte?: Date } {
   const now = new Date()

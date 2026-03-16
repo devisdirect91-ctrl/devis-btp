@@ -80,7 +80,7 @@ export function DashboardShell({
             <HardHat className="w-4 h-4 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <span className="text-sm font-bold text-white tracking-tight">DevisBTP</span>
+            <span className="text-sm font-bold text-white tracking-tight">BTPoche</span>
             <p className="text-xs text-slate-500 truncate">Gestion de devis</p>
           </div>
           <button
@@ -129,7 +129,7 @@ export function DashboardShell({
             <div className="w-6 h-6 bg-amber-500 rounded-md flex items-center justify-center flex-shrink-0">
               <HardHat className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="text-sm font-bold text-slate-900">DevisBTP</span>
+            <span className="text-sm font-bold text-slate-900">BTPoche</span>
           </div>
 
           {/* Espace desktop */}

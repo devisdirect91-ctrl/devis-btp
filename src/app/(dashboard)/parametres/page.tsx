@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { SettingsTabs } from "@/components/settings/settings-tabs"
 
-export const metadata = { title: "Paramètres — DevisBTP" }
+export const metadata = { title: "Paramètres — BTPoche" }
 
 export default async function ParametresPage() {
   const session = await getServerSession(authOptions)

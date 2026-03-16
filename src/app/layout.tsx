@@ -9,7 +9,7 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "DevisBTP - Créez vos devis en quelques clics",
+  title: "BTPoche - Créez vos devis en quelques clics",
   description: "Logiciel de création de devis pour les professionnels du BTP",
 };
 

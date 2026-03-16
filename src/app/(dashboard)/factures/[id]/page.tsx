@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params
   const f = await prisma.facture.findFirst({ where: { id }, select: { numero: true } })
   if (!f) return {}
-  return { title: `${f.numero} — DevisBTP` }
+  return { title: `${f.numero} — BTPoche` }
 }
 
 function fmtDate(d: Date | null | undefined) {

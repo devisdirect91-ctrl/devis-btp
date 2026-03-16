@@ -233,7 +233,7 @@ export async function POST(
     ? devis.client.societe
     : [devis.client.prenom, devis.client.nom].filter(Boolean).join(" ")
   const artisanNom = devis.user.companyName ?? devis.user.name ?? "L'entreprise"
-  const appUrl = process.env.NEXTAUTH_URL ?? "https://devis-btp-eight.vercel.app"
+  const appUrl = process.env.NEXTAUTH_URL ?? "https://btpoche-eight.vercel.app"
 
   void (async () => {
     try {

@@ -11,7 +11,7 @@ import { DevisStatusSelector } from "@/components/ui/DevisStatusSelector"
 import { clientDisplayName } from "@/lib/client-utils"
 import type { Prisma } from "@prisma/client"
 
-export const metadata = { title: "Mes devis — DevisBTP" }
+export const metadata = { title: "Mes devis — BTPoche" }
 
 function getPeriodDates(periode: string): { gte?: Date } {
   const now = new Date()

@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { FactureEditor } from "@/components/factures/facture-editor"
 
-export const metadata = { title: "Nouvelle facture — DevisBTP" }
+export const metadata = { title: "Nouvelle facture — BTPoche" }
 
 function formatFactureNumero(year: number, seq: number): string {
   return `FAC-${year}-${String(seq).padStart(3, "0")}`

@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { formatNumero } from "@/lib/devis-utils"
 import { DevisEditor } from "@/components/devis/devis-editor"
 
-export const metadata = { title: "Nouveau devis — DevisBTP" }
+export const metadata = { title: "Nouveau devis — BTPoche" }
 
 export default async function NouveauDevisPage() {
   const session = await getServerSession(authOptions)

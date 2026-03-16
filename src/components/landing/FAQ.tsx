@@ -8,8 +8,8 @@ const faqs = [
     a: "Non, aucune carte bancaire n'est requise pour démarrer votre essai de 14 jours. Vous créez votre compte en 2 minutes et accédez immédiatement à toutes les fonctionnalités du plan Pro.",
   },
   {
-    q: "Puis-je utiliser DevisBTP depuis mon téléphone sur le chantier ?",
-    a: "Absolument. DevisBTP est conçu mobile-first. Vous pouvez créer, envoyer et suivre vos devis depuis n'importe quel smartphone ou tablette, même avec une connexion limitée.",
+    q: "Puis-je utiliser BTPoche depuis mon téléphone sur le chantier ?",
+    a: "Absolument. BTPoche est conçu mobile-first. Vous pouvez créer, envoyer et suivre vos devis depuis n'importe quel smartphone ou tablette, même avec une connexion limitée.",
   },
   {
     q: "Comment puis-je résilier mon abonnement ?",

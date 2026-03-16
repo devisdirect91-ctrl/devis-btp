@@ -20,7 +20,7 @@ interface AuthRightPanelProps {
 const testimonials = {
   login: {
     quote:
-      "Depuis que j'utilise DevisBTP, je signe 30% de chantiers en plus. Mes devis partent le jour même, depuis mon téléphone.",
+      "Depuis que j'utilise BTPoche, je signe 30% de chantiers en plus. Mes devis partent le jour même, depuis mon téléphone.",
     name: "Sébastien M.",
     job: "Électricien — Paris",
     avatar: "SM",

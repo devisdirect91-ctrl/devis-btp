@@ -9,7 +9,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params
   const devis = await prisma.devis.findFirst({ where: { id }, select: { numero: true } })
   if (!devis) return {}
-  return { title: `Modifier ${devis.numero} — DevisBTP` }
+  return { title: `Modifier ${devis.numero} — BTPoche` }
 }
 
 export default async function ModifierDevisPage({
