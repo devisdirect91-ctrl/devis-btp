@@ -23,7 +23,7 @@ export function FloatingActionButton() {
         {/* Options */}
         <div
           className={`flex flex-col items-end gap-3 transition-all duration-200 ${
-            isOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+            isOpen ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-4 pointer-events-none"
           }`}
         >
           {/* Facture */}
