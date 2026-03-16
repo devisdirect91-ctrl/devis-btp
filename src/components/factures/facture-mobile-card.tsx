@@ -109,7 +109,7 @@ export function FactureMobileCard({ facture: init }: FactureMobileCardProps) {
         </Link>
 
         {/* Boutons d'action */}
-        {(canPay || isRetard || displayStatus === "EN_ATTENTE") && (
+        {(canPay || isRetard || displayStatus === "EN_ATTENTE" || isPartiel) && (
           <div className="px-4 pb-3 flex gap-2">
             {canPay && (
               <button
@@ -120,7 +120,7 @@ export function FactureMobileCard({ facture: init }: FactureMobileCardProps) {
                 Paiement
               </button>
             )}
-            {(isRetard || displayStatus === "EN_ATTENTE") && (
+            {(isRetard || displayStatus === "EN_ATTENTE" || isPartiel) && (
               <button
                 onClick={() => setShowEmailModal(true)}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium transition-colors ${
