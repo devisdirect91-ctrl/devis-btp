@@ -102,7 +102,7 @@ export default async function DevisPage({ searchParams }: PageProps) {
   // Regroupe SIGNE + SIGNE_ELECTRONIQUEMENT pour les stats et filtres
   const signeCount = (byStatus.SIGNE?.count ?? 0) + (byStatus.SIGNE_ELECTRONIQUEMENT?.count ?? 0)
   const caSigne = (byStatus.SIGNE?.total ?? 0) + (byStatus.SIGNE_ELECTRONIQUEMENT?.total ?? 0)
-  const refuseCount = (refuseCount) + (byStatus.REFUSE_ELECTRONIQUEMENT?.count ?? 0)
+  const refuseCount = (byStatus.REFUSE?.count ?? 0) + (byStatus.REFUSE_ELECTRONIQUEMENT?.count ?? 0)
 
   // Mobile: group by month
   function groupByMonth(items: typeof devisList) {
