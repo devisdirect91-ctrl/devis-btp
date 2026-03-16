@@ -102,10 +102,10 @@ export function DashboardShell({
           {/* Gauche : hamburger (mobile) */}
           <button
             className="md:hidden p-2 -ml-1 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors flex-shrink-0"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Ouvrir le menu"
+            onClick={() => setSidebarOpen(v => !v)}
+            aria-label={sidebarOpen ? "Fermer le menu" : "Ouvrir le menu"}
           >
-            <Menu className="w-5 h-5" />
+            {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
           {/* Logo centré sur mobile */}
