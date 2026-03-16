@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { CreditCard } from "lucide-react"
 import { AddPaymentModal } from "./add-payment-modal"
+import { SendFactureEmailModal } from "./SendFactureEmailModal"
 import { computeFactureStatus } from "@/lib/facture-utils"
 import { clientDisplayName } from "@/lib/client-utils"
 
@@ -21,6 +22,7 @@ interface FactureMobileCardProps {
       prenom?: string | null
       societe?: string | null
       type: string
+      email?: string | null
     }
   }
 }
@@ -47,6 +49,7 @@ export function FactureMobileCard({ facture: init }: FactureMobileCardProps) {
   const [montantPaye, setMontantPaye] = useState(init.montantPaye)
   const [status, setStatus] = useState(init.status)
   const [showModal, setShowModal] = useState(false)
+  const [showEmailModal, setShowEmailModal] = useState(false)
 
   const displayStatus = computeFactureStatus(status, new Date(init.dateEcheance))
   const s = STATUS_STYLE[displayStatus] ?? STATUS_STYLE.EN_ATTENTE
@@ -118,8 +121,8 @@ export function FactureMobileCard({ facture: init }: FactureMobileCardProps) {
               </button>
             )}
             {(isRetard || displayStatus === "EN_ATTENTE") && (
-              <Link
-                href={`/factures/${init.id}`}
+              <button
+                onClick={() => setShowEmailModal(true)}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium transition-colors ${
                   isRetard
                     ? "bg-red-50 text-red-600 active:bg-red-100"
@@ -128,7 +131,7 @@ export function FactureMobileCard({ facture: init }: FactureMobileCardProps) {
               >
                 <span>📧</span>
                 {isRetard ? "Relancer le client" : "Envoyer un rappel"}
-              </Link>
+              </button>
             )}
           </div>
         )}
@@ -143,6 +146,13 @@ export function FactureMobileCard({ facture: init }: FactureMobileCardProps) {
         montantPaye={montantPaye}
         onSuccess={handlePaymentSuccess}
       />
+
+      {showEmailModal && (
+        <SendFactureEmailModal
+          factureId={init.id}
+          onClose={() => setShowEmailModal(false)}
+        />
+      )}
     </>
   )
 }
