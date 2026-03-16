@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import {
-  ArrowLeft, FileDown, Mail, Clock,
+  ArrowLeft, FileDown, Clock,
   AlertCircle, Receipt, FileText, CheckCircle2,
 } from "lucide-react"
 import { clientDisplayName } from "@/lib/client-utils"
@@ -118,13 +118,6 @@ export default async function FactureDetailPage({
               <FileDown className="w-4 h-4" />
               PDF
             </a>
-            <a
-              href={`mailto:${facture.client.email ?? ""}?subject=Facture ${facture.numero}`}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
-            >
-              <Mail className="w-4 h-4" />
-              Email
-            </a>
             <FactureDetailActions
               factureId={facture.id}
               factureNumero={facture.numero}
@@ -147,13 +140,6 @@ export default async function FactureDetailPage({
         >
           <FileDown className="w-4 h-4" />
           PDF
-        </a>
-        <a
-          href={`mailto:${facture.client.email ?? ""}?subject=Facture ${facture.numero}`}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium text-slate-600 bg-slate-100 active:bg-slate-200 rounded-xl transition-colors"
-        >
-          <Mail className="w-4 h-4" />
-          Email
         </a>
         <SendFactureEmailButton factureId={facture.id} clientEmail={facture.client.email} />
       </div>
