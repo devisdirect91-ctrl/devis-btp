@@ -334,6 +334,7 @@ enum DevisStatus {
   SIGNE
   SIGNE_ELECTRONIQUEMENT
   REFUSE
+  REFUSE_ELECTRONIQUEMENT
 }
 
 enum FactureStatus {

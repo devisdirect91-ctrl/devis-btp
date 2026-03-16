@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Check, ChevronDown } from "lucide-react"
 
-type DevisStatus = "EN_ATTENTE" | "SIGNE" | "SIGNE_ELECTRONIQUEMENT" | "REFUSE"
+type DevisStatus = "EN_ATTENTE" | "SIGNE" | "SIGNE_ELECTRONIQUEMENT" | "REFUSE" | "REFUSE_ELECTRONIQUEMENT"
 
 interface Props {
   devisId: string
@@ -16,6 +16,7 @@ const statusConfig: Record<DevisStatus, { color: string; bgColor: string; dotCol
   SIGNE:                  { color: "text-emerald-700", bgColor: "bg-emerald-50", dotColor: "bg-emerald-500", label: "Signé" },
   SIGNE_ELECTRONIQUEMENT: { color: "text-emerald-700", bgColor: "bg-emerald-50", dotColor: "bg-emerald-500", label: "Signé ⚡" },
   REFUSE:                 { color: "text-red-700",     bgColor: "bg-red-50",     dotColor: "bg-red-500",    label: "Refusé" },
+  REFUSE_ELECTRONIQUEMENT:{ color: "text-red-700",     bgColor: "bg-red-50",     dotColor: "bg-red-500",    label: "Refusé ⚡" },
 }
 
 const availableStatuses: DevisStatus[] = ["EN_ATTENTE", "SIGNE", "REFUSE"]
@@ -34,8 +35,8 @@ export function DevisStatusSelector({ devisId, currentStatus, onStatusChange }: 
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  const canChange = status !== "SIGNE_ELECTRONIQUEMENT"
-  const cfg = statusConfig[status]
+  const canChange = status !== "SIGNE_ELECTRONIQUEMENT" && status !== "REFUSE_ELECTRONIQUEMENT"
+  const cfg = statusConfig[status] ?? statusConfig.EN_ATTENTE
 
   async function changeStatus(newStatus: DevisStatus) {
     if (newStatus === status) { setIsOpen(false); return }
@@ -67,7 +68,7 @@ export function DevisStatusSelector({ devisId, currentStatus, onStatusChange }: 
           if (canChange && !loading) setIsOpen((o) => !o)
         }}
         disabled={loading}
-        title={!canChange ? "Signé électroniquement — non modifiable" : undefined}
+        title={!canChange ? `${cfg.label} — non modifiable` : undefined}
         className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border transition-opacity
           ${cfg.bgColor} ${cfg.color}
           ${canChange ? "cursor-pointer hover:opacity-80" : "cursor-default"}

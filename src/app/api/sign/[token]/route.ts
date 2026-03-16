@@ -105,7 +105,7 @@ export async function GET(
   const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? h.get("x-real-ip") ?? null
   const userAgent = h.get("user-agent") ?? null
 
-  if (devis.status !== "SIGNE" && devis.status !== "SIGNE_ELECTRONIQUEMENT" && devis.status !== "REFUSE") {
+  if (devis.status !== "SIGNE" && devis.status !== "SIGNE_ELECTRONIQUEMENT" && devis.status !== "REFUSE" && devis.status !== "REFUSE_ELECTRONIQUEMENT") {
     await prisma.signatureLog.create({
       data: { devisId: devis.id, action: "OUVERT", ipAddress: ip, userAgent },
     })
@@ -169,7 +169,7 @@ export async function POST(
     return NextResponse.json({ error: "Ce lien a expiré" }, { status: 410 })
   }
 
-  if (devis.status === "SIGNE" || devis.status === "SIGNE_ELECTRONIQUEMENT" || devis.status === "REFUSE") {
+  if (devis.status === "SIGNE" || devis.status === "SIGNE_ELECTRONIQUEMENT" || devis.status === "REFUSE" || devis.status === "REFUSE_ELECTRONIQUEMENT") {
     return NextResponse.json({ error: "Ce devis a déjà été traité" }, { status: 409 })
   }
 
@@ -206,7 +206,7 @@ export async function POST(
   await prisma.devis.update({
     where: { id: devis.id },
     data: {
-      status: action === "SIGNE" ? "SIGNE_ELECTRONIQUEMENT" : action,
+      status: action === "SIGNE" ? "SIGNE_ELECTRONIQUEMENT" : "REFUSE_ELECTRONIQUEMENT",
       dateSignature,
       signatureClientNom: nom || null,
       // Si l'upload Storage a réussi → on stocke uniquement l'URL, pas le base64

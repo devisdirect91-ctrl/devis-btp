@@ -26,9 +26,9 @@ export async function PATCH(
 
   if (!devis) return NextResponse.json({ error: "Devis introuvable" }, { status: 404 })
 
-  if (devis.status === "SIGNE_ELECTRONIQUEMENT") {
+  if (devis.status === "SIGNE_ELECTRONIQUEMENT" || devis.status === "REFUSE_ELECTRONIQUEMENT") {
     return NextResponse.json(
-      { error: "Impossible de modifier un devis signé électroniquement" },
+      { error: "Impossible de modifier un devis traité électroniquement" },
       { status: 400 }
     )
   }

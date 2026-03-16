@@ -79,7 +79,7 @@ interface Props {
 
 export function SignaturePage({ token, devis, client, lignes, user }: Props) {
   const primary = user.couleurPrimaire ?? "#1d4ed8"
-  const alreadyDone = devis.status === "SIGNE" || devis.status === "REFUSE"
+  const alreadyDone = devis.status === "SIGNE" || devis.status === "REFUSE" || devis.status === "REFUSE_ELECTRONIQUEMENT"
 
   const [pageState, setPageState] = useState<"view" | "refuse-confirm" | "done">(
     alreadyDone ? "done" : "view"
@@ -88,7 +88,9 @@ export function SignaturePage({ token, devis, client, lignes, user }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [result, setResult] = useState<"SIGNE" | "REFUSE" | null>(
-    devis.status === "SIGNE" ? "SIGNE" : devis.status === "REFUSE" ? "REFUSE" : null
+    devis.status === "SIGNE" ? "SIGNE"
+    : (devis.status === "REFUSE" || devis.status === "REFUSE_ELECTRONIQUEMENT") ? "REFUSE"
+    : null
   )
   const [signataireName, setSignataireName] = useState(devis.signatureClientNom ?? "")
   const [signedAt, setSignedAt] = useState<string | null>(devis.dateSignature ?? null)

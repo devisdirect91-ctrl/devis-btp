@@ -65,6 +65,8 @@ export default async function DevisPage({ searchParams }: PageProps) {
   }
   if (status === "SIGNE") {
     where.status = { in: ["SIGNE", "SIGNE_ELECTRONIQUEMENT"] } as unknown as Prisma.EnumDevisStatusFilter
+  } else if (status === "REFUSE") {
+    where.status = { in: ["REFUSE", "REFUSE_ELECTRONIQUEMENT"] } as unknown as Prisma.EnumDevisStatusFilter
   } else if (status) {
     where.status = status as Prisma.EnumDevisStatusFilter
   }
@@ -100,6 +102,7 @@ export default async function DevisPage({ searchParams }: PageProps) {
   // Regroupe SIGNE + SIGNE_ELECTRONIQUEMENT pour les stats et filtres
   const signeCount = (byStatus.SIGNE?.count ?? 0) + (byStatus.SIGNE_ELECTRONIQUEMENT?.count ?? 0)
   const caSigne = (byStatus.SIGNE?.total ?? 0) + (byStatus.SIGNE_ELECTRONIQUEMENT?.total ?? 0)
+  const refuseCount = (refuseCount) + (byStatus.REFUSE_ELECTRONIQUEMENT?.count ?? 0)
 
   // Mobile: group by month
   function groupByMonth(items: typeof devisList) {
@@ -177,7 +180,7 @@ export default async function DevisPage({ searchParams }: PageProps) {
             <FilterChip
               href="/devis?status=REFUSE"
               active={status === "REFUSE"}
-              value={byStatus.REFUSE?.count ?? 0}
+              value={refuseCount}
               label="Refusés"
               color="red"
             />
@@ -238,7 +241,7 @@ export default async function DevisPage({ searchParams }: PageProps) {
                           <p className="font-semibold text-gray-900 text-sm leading-tight">{clientName}</p>
                           <DevisStatusSelector
                             devisId={d.id}
-                            currentStatus={d.status as "EN_ATTENTE" | "SIGNE" | "SIGNE_ELECTRONIQUEMENT" | "REFUSE"}
+                            currentStatus={d.status as "EN_ATTENTE" | "SIGNE" | "SIGNE_ELECTRONIQUEMENT" | "REFUSE" | "REFUSE_ELECTRONIQUEMENT"}
                           />
                         </div>
 
@@ -312,7 +315,7 @@ export default async function DevisPage({ searchParams }: PageProps) {
               },
               {
                 label: "Refusés",
-                value: byStatus.REFUSE?.count ?? 0,
+                value: refuseCount,
                 accent: "text-red-600",
               },
               {
